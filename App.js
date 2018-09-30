@@ -1,5 +1,8 @@
 import React from 'react';
+import api from './src/utilities/api';
+
 import { StyleSheet, Text, View, Dimensions, Image, Animated, PanResponder } from 'react-native';
+import ImageDisplayer from './src/components/initial_scene/ImageDisplayer';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
@@ -7,7 +10,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 const Users = [
   { id: "1", uri: require('./assets/1.jpg') },
   { id: "2", uri: require('./assets/2.jpg') },
-  { id: "3", uri: require('./assets/3.jpg') },
+  { id: "3", uri: require('./assets/6.jpg') },
   { id: "4", uri: require('./assets/4.jpg') },
   { id: "5", uri: require('./assets/5.jpg') },
 ]
@@ -60,6 +63,7 @@ export default class App extends React.Component {
 
   }
   componentWillMount() {
+
     this.PanResponder = PanResponder.create({
 
       onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -112,12 +116,12 @@ export default class App extends React.Component {
             {...this.PanResponder.panHandlers}
             key={item.id} style={[this.rotateAndTranslate, { height: SCREEN_HEIGHT - 120, width: SCREEN_WIDTH, padding: 10, position: 'absolute' }]}>
             <Animated.View style={{ opacity: this.likeOpacity, transform: [{ rotate: '-30deg' }], position: 'absolute', top: 50, left: 40, zIndex: 1000 }}>
-              <Text style={{ borderWidth: 1, borderColor: 'green', color: 'green', fontSize: 32, fontWeight: '800', padding: 10 }}>LIKE</Text>
+              <Text style={{ borderWidth: 1, borderColor: 'green', color: 'green', fontSize: 32, fontWeight: '800', padding: 10 }}>NEXT TIME</Text>
 
             </Animated.View>
 
             <Animated.View style={{ opacity: this.dislikeOpacity, transform: [{ rotate: '30deg' }], position: 'absolute', top: 50, right: 40, zIndex: 1000 }}>
-              <Text style={{ borderWidth: 1, borderColor: 'red', color: 'red', fontSize: 32, fontWeight: '800', padding: 10 }}>NOPE</Text>
+              <Text style={{ borderWidth: 1, borderColor: 'red', color: 'red', fontSize: 32, fontWeight: '800', padding: 10 }}>DISLIKE</Text>
 
             </Animated.View>
 
@@ -159,6 +163,7 @@ export default class App extends React.Component {
 
   render() {
     return (
+      /*
       <View style={{ flex: 1 }}>
         <View style={{ height: 60 }}>
 
@@ -172,6 +177,8 @@ export default class App extends React.Component {
 
 
       </View>
+      */
+      <ImageDisplayer/>
 
     );
   }

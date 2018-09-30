@@ -1,0 +1,740 @@
+
+<!-- saved from url=(0078)http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css">
+            h1 {font-size:24px}
+            #processing {float:right; color:red; visibility:hidden;
+                position:fixed; top:.5in; left:6.5in}
+            #searchPat {float:right; position: relative; top:-.2in}
+            #processing2 {visibility:hidden;  position:fixed;
+                top:.5in; left:8in}
+            #message {float:right; color:red;   position:fixed; top:.5in;
+                left:6.5in}
+            #outerclipboard {background-color:#CCC; padding:.1in}
+            #innerclipboard {background-color:#FFF; padding:.1in}
+      </style>
+      
+              <style type="text/css">
+        /* Element Styles */
+        </style>
+            <style type="text/css">
+        /* Element Styles */
+        </style>
+            <style type="text/css">
+             textarea {width: 100%}
+             #outercontent {background-color:#CCC; padding:.1in}
+             #innercontent {background-color:#FFF; padding:.1in}
+        </style>
+            <script type="text/javascript">
+
+        // Javascript globals 
+
+        // these are associated with animating "Processing..." word
+        frame = false;
+        animation_running = false;
+
+        function E(id, name, options, link,  size,  modified)
+         /*
+            This Javascript Object corresponds to a particular PHP Element
+            Object The name is just E to save bandwidth.
+         */
+        {
+            this.id = id;
+            this.name = name;
+            this.options = options;
+            this.link = link;
+            this.size = size;
+            this.modified = modified;
+        }
+
+        var folderContents = new Array(new E('0', '.', 'd[<a title="View" href="@name@/folder.php">V-@id@</a>][<a title="Zip Archive Directory" href="javascript:zipDirectory(@id@,\'@name@\');">Z-@id@</a>]', '<input type="text" size="60" readonly="readonly" value="@name@" />', 4096, '2018-09-10 04:48:38'),new E('1', '..', 'd[<a title="View" href="@name@">V-@id@</a>][<a title="Zip Archive Directory" href="javascript:zipDirectory(@id@,\'@name@\');">Z-@id@</a>]', '<input type="text" size="60" readonly="readonly" value="@name@" />', 4096, '2018-09-04 09:52:21'),new E('2', 'Bio.shtml', 'f[<a title="View" href="@name@">V-@id@</a>][<a title="Copy to clipboard" href="javascript:copyFile(@id@,\'@name@\');">C-@id@</a>][<a title="Cut to clipboard" href="javascript:cutFile(@id@,\'@name@\')">X-@id@</a>][<a title="Edit file"  href="javascript:editText(@id@,\'@name@\');">E-@id@</a>]', '<input type="text" size="60" value="@name@" onblur="javascript:changeName(@id@, this.value)" />', 412, '2018-09-10 05:02:13'),new E('3', 'Blog.shtml', 'f[<a title="View" href="@name@">V-@id@</a>][<a title="Copy to clipboard" href="javascript:copyFile(@id@,\'@name@\');">C-@id@</a>][<a title="Cut to clipboard" href="javascript:cutFile(@id@,\'@name@\')">X-@id@</a>][<a title="Edit file"  href="javascript:editText(@id@,\'@name@\');">E-@id@</a>]', '<input type="text" size="60" value="@name@" onblur="javascript:changeName(@id@, this.value)" />', 569, '2018-09-18 04:40:28'),new E('4', 'CS297Proposal.shtml', 'f[<a title="View" href="@name@">V-@id@</a>][<a title="Copy to clipboard" href="javascript:copyFile(@id@,\'@name@\');">C-@id@</a>][<a title="Cut to clipboard" href="javascript:cutFile(@id@,\'@name@\')">X-@id@</a>][<a title="Edit file"  href="javascript:editText(@id@,\'@name@\');">E-@id@</a>]', '<input type="text" size="60" value="@name@" onblur="javascript:changeName(@id@, this.value)" />', 5534, '2018-09-18 04:35:00'),new E('5', 'index.shtml', 'f[<a title="View" href="@name@">V-@id@</a>][<a title="Copy to clipboard" href="javascript:copyFile(@id@,\'@name@\');">C-@id@</a>][<a title="Cut to clipboard" href="javascript:cutFile(@id@,\'@name@\')">X-@id@</a>][<a title="Edit file"  href="javascript:editText(@id@,\'@name@\');">E-@id@</a>]', '<input type="text" size="60" value="@name@" onblur="javascript:changeName(@id@, this.value)" />', 2582, '2018-09-10 04:48:30'),new E('6', 'myincludes.html', 'f[<a title="View" href="@name@">V-@id@</a>][<a title="Copy to clipboard" href="javascript:copyFile(@id@,\'@name@\');">C-@id@</a>][<a title="Cut to clipboard" href="javascript:cutFile(@id@,\'@name@\')">X-@id@</a>][<a title="Edit file"  href="javascript:editText(@id@,\'@name@\');">E-@id@</a>]', '<input type="text" size="60" value="@name@" onblur="javascript:changeName(@id@, this.value)" />', 3958, '2018-09-03 07:40:19'));
+        
+        var folderSortDirections = new E('A', 'A', 'A', 'A', 'A', 'A', 'A');
+
+        function makeRequest()
+        /*
+           Function to set up a request object even in  older IE's
+        */
+        {
+            try{
+                request = new XMLHttpRequest();
+            }
+            catch(e) {
+                try {
+                    request = new ActiveXObject('MSXML2.XMLHTTP');
+                }
+                catch(e) {
+                    try {
+                        request = new ActiveXObject('Microsoft.XMLHTTP');
+                    }
+                    catch(e) {
+                        return false;
+                    }
+                }
+            }
+            return request;
+        }
+      
+        function sendREST(id, action, action_field)
+        /*
+            This is the main function for dispatching REST commands from the
+            client to the server. It, of course, is technically not REST in the
+            Wikipedia sense as for one thing POST is used. The format the server
+            expects for a command though is nice and standardized:
+            id=val_id&action=val_action&actionField=val_actionField , where id 
+            is the id of the element sending the request, action is the command
+            being sent to the server and actionField is any parameters needed to
+            carry out the action
+        */
+        {
+            var request = makeRequest();
+            if(request) {
+                timer = setInterval("processingAnimation()", 250);
+                animation_running =true;
+
+                var self = this;
+                request.onreadystatechange = function() {
+                     if(self.request.readyState == 4 ) {
+                        stopAnimation();
+                        //alert(self.request.responseText);
+                        eval(self.request.responseText);
+                     }
+                }
+
+                var params="mode=rest&id=" + id + "&action=" + action +
+                    "&actionField=" + action_field;
+                request.open("POST",
+                    "http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php", true);
+
+                request.setRequestHeader("Content-type",
+                    "application/x-www-form-urlencoded");
+                request.setRequestHeader("Content-length", params.length);
+                request.setRequestHeader("Connection", "close");
+
+                request.send(params);
+            }
+        }
+
+        function processingAnimation()
+         /*
+             Function used to animate Processing...
+             while waiting for a REST response
+         */
+        {
+            frame = (frame) ? false : true;
+            processing_tag = document.getElementById("processing");
+            processing_2_tag = document.getElementById("processing2");
+            processing_tag.style.visibility = "visible";
+            if(frame) {
+                processing_2_tag.style.visibility = "visible";
+            } else {
+                processing_2_tag.style.visibility = "hidden";
+            }
+        }
+      
+        function stopAnimation()
+         /*
+             Stops the processing animation
+         */
+        {
+            clearInterval(timer);
+            processing_tag = document.getElementById("processing");
+            processing_2_tag = document.getElementById("processing2");
+            processing_tag.style.visibility = "hidden";
+            processing_2_tag.style.visibility = "hidden";
+            animation_running = false;
+        }
+
+        function sortFolder(attribute, direction)
+         /*
+            used to sort the E elements in folderContents with respect to the
+            given attribute and A for ascending D for descending
+         */
+        {
+            var orderElts = function(e1, e2)
+            {
+                 var t1 = e1[attribute];
+                 var t2 = e2[attribute];
+
+                 if(attribute=="id" || attribute=="size") {
+                    t1 = Number(t1);
+                    t2 = Number(t2);
+                 }
+
+                 if(t1 == t2) {
+                     if(direction=='D') {
+                        return (Number(e2['id']) < Number(e1['id']) ) ? 1 : -1;
+                     }
+
+                     return (Number(e2['id']) < Number(e1['id'])) ? -1 : 1;
+                 }
+                 if(direction=='D') {
+                    return (t2 < t1) ? 1 : -1;
+                 }
+                
+                 return (t2 < t1) ? -1 : 1;
+            }
+            
+            folderContents.sort(orderElts);
+        }
+      
+        function drawFolder()
+         /*
+             Draws the folder to the HTML page  
+         */
+        {
+            ft = document.getElementById("folderTable");
+            ft.innerHTML = getFolderString();
+        }
+      
+        function sortDrawFolder(attribute)
+         /*
+            sorts the folder according to the attribute, toggles the sort
+            direction, and redraws the folder
+         */
+        {
+            var direction = folderSortDirections[attribute];
+            sortFolder(attribute, direction);
+            folderSortDirections[attribute] = (direction=='A') ? 'D': 'A';
+            drawFolder();
+        }
+
+        function displayGlossary()
+         /*
+              outputs the glossary with the commands on what the links for a
+              given element mean.
+         */
+        {
+            alert('Summary of Commands\n'+
+                    '===================\n\n'+
+                    'V - used to view a file or switch into a directory\n'+
+                    'C - copy a file/directory/link to the clipboard\n'+
+                    'X - move/cut a file/directory/link to the clipboard\n'+
+                    'E - edit a text file\n'+
+                    'Z - make a ZIP archive of a directory\n'+
+                    'UZ - unzip a ZIP archive to current directory'
+            );
+        }
+
+        function getFolderString()
+        {
+            fs ='<table width="100%">' +
+                '<col width="200px" /> <col width="500px" />' +
+                '<col width="100px" /><col width="*" />' +
+                '<thead>'+
+                    '<td>Commands (<a href="javascript:displayGlossary();"' +
+                        '>Glossary</a>).</td>'+
+                    '<td><a href="javascript:sortDrawFolder(\'name\')"' +
+                        '>Filename</a>.</td>'+
+                    '<td><a href="javascript:sortDrawFolder(\'size\')"' +
+                        '>Size</a>.</td>'+
+                    '<td><a href="javascript:sortDrawFolder(\'modified\')"' +
+                        '>Date Modified</a>.</td>'+
+                '</thead>'+
+                '<tbody>'+
+                '<tr><td colspan="4"><hr /></td></tr>';
+            for(var elt in folderContents)
+            {
+                searchField = document.getElementById("search");
+                searchPattern = searchField.value;
+                if(folderContents[elt]["name"].search(searchPattern) ==0) {
+                    fs += '<tr>';
+                    for(var part in folderContents[elt]) {
+                        if(part != "name" && part !="id" && part !="permissions"
+                            && part !="user" && part != "group") {
+                            tmp = new String(folderContents[elt][part]);
+                            
+                            tmp = tmp.replace(/@id@/g,"" +
+                                folderContents[elt]["id"]);
+                            tmp = tmp.replace(/@name@/g,"" +
+                                folderContents[elt]["name"]);
+                            fs +="<td>"+tmp+"</td>";
+                        }
+                    }
+                    fs +='</tr>';
+                }
+            }    
+            fs += '</tbody>' +
+                '<tfoot><td colspan="4"><hr /></td></tfoot>'+
+                '</table>';
+            
+            return fs;
+        }
+                function searchFolder(file)
+         /*
+             returns if the given file is currently in the folder
+         */
+        {
+            for(var elt in folderContents) {
+                if(file == folderContents[elt]["name"]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function deleteElementFolder(id)
+        {
+            sortFolder("id","D");
+            len = folderContents.length;
+            for(var i = id; i < len-1; i++) {
+                folderContents[i] = folderContents[i+1];
+                folderContents[i]["id"] = i;
+            }
+            delete folderContents[len-1];
+            folderContents.length--;
+        }
+
+        function replaceElementFolder(id, element)
+        {
+            for(var elt in folderContents) {
+                if(id == folderContents[elt]["id"]) {
+                    folderContents[elt] = element;
+                    break;
+                }
+            }
+        }
+
+        function insertElementFolder(element)
+        {
+            sortFolder("id","D");
+            loc = element["id"];
+            if(loc < folderContents.length && 
+                element["name"] == folderContents[loc]["name"]) {
+                folderContents[loc] = element;
+                return;
+            }
+            folderContents.splice(loc, 0, element);
+            for(var i= 1; i < folderContents.length; i++) {
+                folderContents[i]["id"]=i;
+            }
+        }
+
+        function reorderFolder()
+        {
+            sortFolder("id", "D");
+            drawFolder();
+        }
+
+        function doMessage(msg)
+        {
+            message_tag = document.getElementById("message");
+            message_tag.innerHTML = msg;
+            msg_timer = setInterval("undoMessage()", 2000);
+        }
+
+        function undoMessage()
+        {
+            message_tag = document.getElementById("message");
+            message_tag.innerHTML = "";
+            clearInterval(msg_timer);
+        }
+        
+        function createFinish(succeed, filename, type)
+        {
+            if(succeed) {
+                doMessage(type + ' Created');
+                if(type == "File") {
+                    document.location="http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php";
+                }
+                reorderFolder();
+            } else {
+                doMessage('Error Creating '+type);
+            }
+        }
+
+        function createFile()
+        {
+            if(!animation_running) {
+                i = 0;
+                prefix = "untitled";
+                while(searchFolder(prefix+i+".txt")) {
+                    i++;
+                }
+                sendREST("folder0",
+                    "createFileREST", prefix+i+".txt");
+            }
+        }
+
+        function createFolder()
+        {
+            if(!animation_running)
+            {
+                i=0;
+                prefix = "untitled_folder";
+                while(searchFolder(prefix + i)) {
+                    i++;
+                }
+                sendREST("folder0",
+                    "createFolderREST", prefix + i);
+            }
+        }
+
+        function createLink()
+        {
+            if(!animation_running) {
+                i = 0;
+                prefix = "untitled_link";
+                while(searchFolder(prefix + i)) {
+                    i++;
+                }
+                sendREST("folder0", "createLinkREST", prefix+i);
+            }
+        }
+
+        function upload()
+        {
+            upload_link = document.getElementById("upload");
+            upload_link.innerHTML = "<b>[Upload]</b>";
+            handle_area = document.getElementById("handleItemArea");
+            up_form = '<form enctype="multipart/form-data" method="post"'+
+                'action="http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php" >' +
+                '<input type="hidden" name="MAX_FILE_SIZE" '+
+                'value="100000000" />'+
+                '<input type="hidden" name="mode" value="upload" />'+
+                '<p><label for="docname">File Name:</label>'+
+                '[<input type="file" name="docname" id="docname"/>]&nbsp;' +
+                '&nbsp;<input type="submit" value="Upload" />&nbsp;&nbsp;' +
+                '<input type="button" onclick="javascript:cancelUpload()" ' +
+                'value="Cancel"/></p></form>';
+            handle_area.innerHTML = up_form;
+        }
+
+        function cancelUpload()
+        {
+            upload_link = document.getElementById("upload");
+            upload_link.innerHTML =
+                '[<a href="javascript:upload()">Upload</a>]';
+            
+            handle_area = document.getElementById("handleItemArea");
+            handle_area.innerHTML = "";
+        }
+        
+        function pasteClipboard(file)
+        {
+            if(!animation_running) {
+                sendREST("folder0", "pasteClipboardREST", file);
+            }
+        }
+        
+        function pasteAllClipboard()
+        {
+            if(!animation_running) {
+              sendREST("folder0", "pasteAllClipboardREST", "");
+            }
+        }
+
+        function pasteFinish(succeed, filename)
+        {
+            if(succeed) {
+                doMessage(filename+' Pasted to Current Folder');
+                reorderFolder();
+            } else {
+                doMessage('Error Pasting '+ filename + 'to Current folder');
+            }
+        }
+
+        function emptyAllClipboard()
+        {
+            if(!animation_running)
+            {
+                sendREST("folder0",
+                    "emptyAllClipboardREST", "");
+            }
+        }
+           
+        function emptyAllFinish(succeed)
+        {
+            if(succeed) {
+                doMessage('Clipboard Files Deleted');
+            } else {
+                doMessage('Error Deleting Clipboard Files');
+            }
+        }
+
+        function encode(input) 
+        {
+          var output = "";
+          var i = 0;
+          for( var i = 0; i < input.length; i++) {
+             output += input.charCodeAt(i) + "c";
+          }
+          return output;
+        }
+                </script>
+
+                <script type="text/javascript">
+            //Element Scripts
+            function copyFile(id,filename)
+            /*
+                Javascript to send REST command to copy this file/folder/link to
+                the clipboard
+             */
+            {
+                if(!animation_running) {
+                    sendREST(id, "copyFileREST", filename);
+                }
+            }
+            
+            function copyFileFinish(succeed)
+            /*
+               Javascript called from REST response depending on the success or
+                failure of copying to clipboard
+             */
+            {
+                if(succeed) {
+                    doMessage('File Copied to Clipboard');
+                } else {
+                    doMessage('Error Copying File to Clipboard');
+                }
+            }
+
+            function cutFile(id,filename)
+            /*
+               Javascript to send REST command to cut this file/folder/link to
+               the clipboard
+            */
+            {
+                if(!animation_running) {
+                    sendREST(id, "cutFileREST", filename);
+                }
+            }
+
+            function cutFileFinish(succeed)
+               /*
+                  Javascript called from REST response depending on the success
+                  or failure of cutting to clipboard
+               */
+            {
+                if(succeed) {
+                    doMessage('File Cut to Clipboard');
+                } else {
+                    doMessage('Error Cutting File to Clipboard');
+                }
+                drawFolder();
+            }
+
+            function changeName(id,filename)
+            /*
+               Javascript to send REST command to change the name of this
+               file/folder/link 
+            */
+            {
+                if(!animation_running) {
+                    sendREST(id, "changeNameREST", filename);
+                }
+            }
+            
+            function changeNameFinish(succeed)
+               /*
+                 Javascript called from REST response depending on the success
+                 or failure of changing the filename
+               */
+            {
+                if(succeed) {
+                    doMessage('Filename Has Been Changed');
+                } else {
+                    doMessage('Error Changing Filename');
+                }
+                drawFolder();
+            }
+        </script>
+                <script type="text/javascript">
+            function zipDirectory(id, filename)
+            /*
+             Called to ZIP a particular folder
+             id - of element to be zipped
+             filename - of directory to be zipped
+            */
+            {
+                if(!animation_running) {
+                    sendREST(id, "zipDirectoryREST", filename);
+                }
+            }
+            
+            function zipDirectoryFinish(succeed)
+            /*
+             Function called by REST response on success or failure of
+                zipDirectory
+             succeed - boolean containing success or failure of operation.
+            */
+            {
+                if(succeed) {
+                    doMessage('Directory zipped!');
+                    reorderFolder();
+                } else {
+                    doMessage('Error zipping directory');
+                }
+            }
+        </script>
+            <script type="text/javascript">
+            function editText(id, filename)
+            {
+                content_tag = document.getElementById('content');
+                old_content_string = content_tag.innerHTML;
+                edit_text_content = '<h1>Editing File: '+filename+ 
+                    '&nbsp;&nbsp[<a href="javascript:saveEditText(' + id +
+                        ')">Save</a>]&nbsp;&nbsp;' +
+                    '[<a href="" onclick="javascript:closeEditText()"' +
+                    '>Close</a>]</h1>'+
+                    '<div id="outercontent"><p><button onclick="scroll(-1)"' +
+                    '>Page Up</button></p><div id="innercontent">'+
+                    '<textarea id="editarea" rows="30" onchange="cutPaste()"' +
+                    '></textarea>'+
+                    '</div><p><button onclick="scroll(1)">Page Down</button>' +
+                    '</p></div>';
+                content_tag.innerHTML = edit_text_content;
+                search_tag = document.getElementById('searchPat');
+                old_search_string = search_tag.innerHTML;
+                find_text_content = '<b>Find String:</b> <input type="text" ' +
+                    'size="20" id="find" />'+
+                    '[<a href="javascript:findString(-1)">Previous</a>][<a ' +
+                    'href="javascript:findString(1)">Next</a>]<br />'+
+                    '<b>Line:</b> <input type="text" size="20" id="line" ' +
+                    '/><button onclick="gotoLine()">Go</button>';
+                    search_tag.innerHTML = find_text_content;
+                sendREST(id, "getFileREST", filename);
+            }
+        </script>
+            <script type="text/javascript">
+            function saveEditText(id)
+            {
+                editArea = document.getElementById('editarea');
+                var tmp = editArea.value;
+                sendREST(id, "saveFileREST", encode(tmp));
+            }
+            function saveFileFinish(succeed, filename)
+            {
+                if(succeed) {
+                    doMessage(filename+' Has Been Saved');
+                } else {
+                    doMessage('Error Saving'+filename);
+                }
+            }
+            
+            function closeEditText()
+            {
+                content_tag = document.getElementById('content');
+                content_tag.innerHTML = old_content_string;
+                search_tag = document.getElementById('searchPat'); 
+                search_tag.innerHTML = old_search_string;
+            }
+
+            function setSelectionRange(input, selectionStart, selectionEnd)
+            {
+                if (input.setSelectionRange) {
+                      input.focus();
+                      input.setSelectionRange(selectionStart, selectionEnd);
+                } else if (input.createTextRange) {
+                      var range = input.createTextRange();
+                      range.collapse(true);
+                      range.moveEnd('character', selectionEnd);
+                      range.moveStart('character', selectionStart);
+                      range.select();
+                }
+             }
+
+            function findString(dir)
+            {
+                var textObject=document.getElementById("editarea");
+
+                var findString = document.getElementById("find").value;
+                var start = textObject.selectionStart;
+
+                var pos;
+
+                if(dir > 0) {
+                    pos = textObject.value.indexOf(findString, start + 1);
+                } else {
+                    startString = textObject.value.substring(0, start); 
+                    pos = startString.lastIndexOf(findString);
+                }
+                textObject.selectionStart = pos;
+                textObject.selectionEnd = pos+findString.length;
+                posString = textObject.value.substring(0, pos);
+                posArray = posString.split("\n");
+                 numLines = posArray.length; 
+
+                textArray=textObject.value.split("\n");
+                totalLines = textArray.length;
+                lineHeight= textObject.scrollHeight/totalLines;
+
+                setSelectionRange(textObject, pos, pos+findString.length);
+
+                textObject.scrollTop = lineHeight*numLines -
+                    textObject.clientHeight/2;
+            }
+
+            function gotoLine()
+            {
+                var textObject=document.getElementById("editarea");
+                var lineNumber = document.getElementById("line").value - 1;
+                textArray=textObject.value.split("\n");
+                totalLines = textArray.length;
+                lineHeight= textObject.scrollHeight/totalLines;
+                pos=0;
+                for(i=0; i<lineNumber; i++) {
+                    pos += textArray[i].length + 1;
+                }
+                setSelectionRange(textObject, pos,
+                    pos + textArray[lineNumber].length);
+                textObject.scrollTop = lineHeight*lineNumber -
+                    textObject.clientHeight/2;
+            }
+
+            clipboard=""; // variable to store cut text
+
+            cutDelimeter = "$@."; // string used to indicate region to cut
+            insertDelimeter = ".@$"; // string used to indicate region to cut
+            
+            function scroll(dir)
+            {
+                var textObject=document.getElementById("editarea");
+                textObject.scrollTop += dir * textObject.clientHeight/2;
+            }
+
+            function cutPaste()
+            /*
+                Main function which implements cut and paste
+            */
+            {
+                //object for the textarea
+                var textObject = document.getElementById("editarea");
+
+                //start position of cut area
+                var start  = textObject.value.indexOf(cutDelimeter);
+
+                //end position of cut area 
+                var end = textObject.value.indexOf(cutDelimeter, start+2);
+                
+                var len = textObject.value.length;
+
+                //location to insert
+                var insert = textObject.value.indexOf(insertDelimeter);
+                if(end != -1) {
+                    clipboard =  textObject.value.substring(start+2, end); 
+                    alert("Clipboard is: " + clipboard);
+                    textObject.value = textObject.value.substring(0, start) +
+                        textObject.value.substring(end+2, len) ;
+                }
+                if(start == -1) {
+                    if(insert != -1) {
+                        endstring = textObject.value.substring(insert + 2, len);
+                        textObject.value = 
+                            textObject.value.substring(0, insert) + clipboard +
+                            endstring;
+                        alert('Inserting "' + clipboard + 
+                            '" at first insert delimeter ' +
+                            insertDelimeter +' location');
+                    }
+                }
+            }
+        </script>
+             
+        </head><body><h1>/<a href="http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/folder.php">Fall18</a>/<a href="http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php">bao</a> 
+            <span id="message"></span>
+            <span id="processing" style="visibility: hidden;">Processing
+            <span id="processing2" style="visibility: hidden;">...</span></span>
+        </h1>
+        <p id="searchPat"><b>Find String:</b> <input type="text" size="20" id="find">[<a href="javascript:findString(-1)">Previous</a>][<a href="javascript:findString(1)">Next</a>]<br><b>Line:</b> <input type="text" size="20" id="line"><button onclick="gotoLine()">Go</button></p>
+
+        <div id="content"><h1>Editing File: Blog.shtml&nbsp;&nbsp;[<a href="javascript:saveEditText(3)">Save</a>]&nbsp;&nbsp;[<a href="http://www.cs.sjsu.edu/faculty/pollett/masters/Semesters/Fall18/bao/folder.php" onclick="javascript:closeEditText()">Close</a>]</h1><div id="outercontent"><p><button onclick="scroll(-1)">Page Up</button></p><div id="innercontent"><textarea id="editarea" rows="30" onchange="cutPaste()"></textarea></div><p><button onclick="scroll(1)">Page Down</button></p></div></div></body></html>
