@@ -1,5 +1,5 @@
 import React from 'react';
-import api from './src/utilities/api';
+import API from './src/utilities/api';
 
 import { StyleSheet, Text, View, Dimensions, Image, Animated, PanResponder } from 'react-native';
 import ImageDisplayer from './src/components/initial_scene/ImageDisplayer';
