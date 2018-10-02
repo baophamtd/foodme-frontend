@@ -15,25 +15,38 @@ export default class ImageDisplayer extends Component{
 
   componentDidMount(){
     API.searchRestaurants().then((res) =>{
-      console.log("here"+res.length)
-      this.setState({
+      //console.log("here"+res.length)
+      /*this.setState({
         restaurants: res,
-      })
+      })*/
+      setTimeout(function() { //Start the timer
+        this.setState({
+          restaurants: res,
+        }) //After 3 second, set render to true
+      }.bind(this), 3000)
     })
   };
 
   renderImageIndexes(){
     if(this.state.restaurants.length != 0){
-      console.log(this.state.restaurants[0].photos.length)
+      var indexSlots = [];
+      for(let i = 0; i < this.state.restaurants[0].photos.length; i++){
+        if(i == 0){
+          indexSlots.push(
+            <View style = {styles.roundedRectangleInitial}  key = {i}/>
+          )
+        }else{
+          indexSlots.push(
+            <View style = {styles.roundedRectangleNormal}  key = {i}/>
+          )
+        }
+      }
       return (
         <View style = {styles.imageIndexHolder}>
-          {this.state.restaurants[0].photos.map((photo,key) => {
-           return (
-             <View style = {styles.roundedRectangle}  key = {key}/>
-           );
-          })}
+          {indexSlots}
         </View>
       )
+
     }
   }
 
@@ -89,7 +102,6 @@ const styles = StyleSheet.create({
   },
   imageContainer:{
     flex: 9,
-    //height: '70%',
     marginRight:10,
     marginLeft:10,
     marginTop: '20%',
@@ -163,13 +175,17 @@ const styles = StyleSheet.create({
     marginLeft:10,
     alignItems: 'stretch'
   },
-  roundedRectangle: {
+  roundedRectangleInitial: {
     flex:1,
-    //paddingRight:5,
-    //paddingLeft:5,
-    //height: 5,
     borderRadius:10,
     backgroundColor: 'white',
+    marginLeft:1,
+    marginRight:1
+  },
+  roundedRectangleNormal: {
+    flex:1,
+    borderRadius:10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     marginLeft:1,
     marginRight:1
   }
