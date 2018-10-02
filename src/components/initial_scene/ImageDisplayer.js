@@ -59,10 +59,8 @@ export default class ImageDisplayer extends Component{
     if(this.state.currentImageIndex < this.state.restaurants[this.state.currentRestaurantIndex].photos.length -1){
       this.setState({
         currentImageIndex: this.state.currentImageIndex + 1,
-        currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
-      })
+      }, this.updateImage)
     }
-    //console.log('Next'+this.state.currentImageIndex);
   }
 
   //go to next image
@@ -70,11 +68,33 @@ export default class ImageDisplayer extends Component{
     if(this.state.currentImageIndex > 0){
       this.setState({
         currentImageIndex: this.state.currentImageIndex - 1,
-        currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
-      })
+      }, this.updateImage)
     }
 
   }
+
+  //show next restaurants
+  nextRestaurant(){
+    this.setState({
+      currentRestaurantIndex: this.state.currentRestaurantIndex + 1,
+      currentImageIndex:0
+    }, this.updateImage)
+  }
+
+  updateImage(){
+    console.log(this.state.currentRestaurantIndex)
+    this.setState({
+      currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
+    })
+  }
+
+  /*
+  updateRestaurant(){
+    this.setState({
+      currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
+    })
+  }
+  */
 
   render(){
     return (
@@ -98,7 +118,8 @@ export default class ImageDisplayer extends Component{
 
 
         <View style = {styles.buttonContainer}>
-          <TouchableOpacity style={styles.buttonDislike}>
+          <TouchableOpacity style={styles.buttonDislike}
+            onPress = {()=>this.nextRestaurant()}>
             <Image
               style = {styles.buttonIcon}
               source = {require('../../images/thumb-down-icon.png')}
@@ -112,7 +133,8 @@ export default class ImageDisplayer extends Component{
               resizeMode = 'contain'
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonLike}>
+          <TouchableOpacity style={styles.buttonLike}
+          onPress = {()=>this.nextRestaurant()}>
             <Image
               style = {styles.buttonIcon}
               source = {require('../../images/heart-icon.png')}
