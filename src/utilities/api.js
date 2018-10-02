@@ -26,7 +26,17 @@ var api = {
     });*/
 
     let restaurants = results.map(restaurant => {
-      return new Restaurant({name:restaurant.name, id: restaurant.id, photos:restaurant.photos});
+      let photos = restaurant.photos.map(photo =>{
+        var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
+        let uri = {
+              key: 'AIzaSyDMMHtsOh6B3rBgqu9Q1ZqsHntJfYiQ8NA',
+              maxwidth: 1000,
+              maxheight: 1000,
+              photo_reference: photo.photo_reference
+        };
+        return `${endPoint}${querystring.stringify(uri)}`;
+      })
+      return new Restaurant({name:restaurant.name, id: restaurant.id, photos:photos});
     })
     return restaurants;
   }

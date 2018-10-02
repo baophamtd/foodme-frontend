@@ -8,10 +8,12 @@ export default class ImageDisplayer extends Component{
 
   state = {
     currentRestaurantIndex: 0,
-    currentPhotoIndex: 0,
+    currentImageIndex: 0,
     currentImage: require('../../images/loading-icon.png'),
     restaurants: []
   };
+
+
 
   componentDidMount(){
     API.searchRestaurants().then((res) =>{
@@ -22,15 +24,17 @@ export default class ImageDisplayer extends Component{
       setTimeout(function() { //Start the timer
         this.setState({
           restaurants: res,
+          currentImage: {uri:res[0].photos[0]}
         }) //After 3 second, set render to true
-      }.bind(this), 3000)
+      }.bind(this), 2000)
     })
   };
 
+  //render the image index on top of the image deck
   renderImageIndexes(){
     if(this.state.restaurants.length != 0){
       var indexSlots = [];
-      for(let i = 0; i < this.state.restaurants[0].photos.length; i++){
+      for(let i = 0; i < this.state.restaurants[this.state.currentRestaurantIndex].photos.length; i++){
         if(i == 0){
           indexSlots.push(
             <View style = {styles.roundedRectangleInitial}  key = {i}/>
@@ -42,7 +46,7 @@ export default class ImageDisplayer extends Component{
         }
       }
       return (
-        <View style = {styles.imageIndexHolder}>
+        <View style = {styles.imageIndexContainer}>
           {indexSlots}
         </View>
       )
@@ -50,15 +54,44 @@ export default class ImageDisplayer extends Component{
     }
   }
 
+  //go to next image
+  nextImage(){
+    if(this.state.currentImageIndex < this.state.restaurants[this.state.currentRestaurantIndex].photos.length -1){
+      this.setState({
+        currentImageIndex: this.state.currentImageIndex + 1,
+        currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
+      })
+    }
+    //console.log('Next'+this.state.currentImageIndex);
+  }
+
+  //go to next image
+  previousImage(){
+    if(this.state.currentImageIndex > 0){
+      this.setState({
+        currentImageIndex: this.state.currentImageIndex - 1,
+        currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
+      })
+    }
+
+  }
+
   render(){
     return (
       <View style = {styles.container}>
         <View style = {styles.imageContainer}>
           <ImageBackground style = {styles.image}
-            //source = {require('../../images/test.png')}
             source = {this.state.currentImage}
             resizeMode = 'contain'>
             {this.renderImageIndexes()};
+            <View style = {styles.imageButtonControllerContainer}>
+              <TouchableOpacity
+                style = {styles.imageControllerButton}
+                onPress = {()=>this.previousImage()}/>
+              <TouchableOpacity
+                style={styles.imageControllerButton}
+                onPress = {()=>this.nextImage()}/>
+            </View>
           </ImageBackground>
 
         </View>
@@ -162,7 +195,7 @@ const styles = StyleSheet.create({
     height: undefined,
     width: undefined,
   },
-  imageIndexHolder:{
+  imageIndexContainer:{
     alignSelf: 'stretch',
     height: 5,
     borderRadius:10,
@@ -188,6 +221,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     marginLeft:1,
     marginRight:1
+  },
+  imageButtonControllerContainer: {
+    flex:1,
+    backgroundColor: 'transparent',
+    flexDirection: 'row'
+  },
+  imageControllerButton:{
+    flex:1,
+    backgroundColor: 'transparent',
   }
 
 
