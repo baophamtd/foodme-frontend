@@ -1,32 +1,33 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Image, ImageBackground, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity} from 'react-native';
+import { BlurView } from 'react-native-blur';
 import API from '../../utilities/api';
 import Restaurant from '../../utilities/restaurant.object';
 
 
 export default class ImageDisplayer extends Component{
 
-  state = {
-    currentRestaurantIndex: 0,
-    currentImageIndex: 0,
-    currentImage: require('../../images/loading-icon.png'),
-    restaurants: []
-  };
-
-
+  constructor(props){
+    super(props);
+    this.state = {
+      currentRestaurantIndex: 0,
+      currentImageIndex: 0,
+      currentImage: require('../../images/loading-icon.png'),
+      currentRestaurantName: '',
+      currentRestaurantType: '',
+      restaurants: []
+    }
+  }
 
   componentDidMount(){
-    API.searchRestaurants().then((res) =>{
-      //console.log("here"+res.length)
-      /*this.setState({
-        restaurants: res,
-      })*/
-      setTimeout(function() { //Start the timer
+    navigator.geolocation.getCurrentPosition(position =>{
+      API.searchRestaurants(position.coords.latitude, position.coords.longitude)
+      .then((res) =>{
         this.setState({
           restaurants: res,
           currentImage: {uri:res[0].photos[0]}
-        }) //After 3 second, set render to true
-      }.bind(this), 2000)
+        })
+      })
     })
   };
 
@@ -35,7 +36,7 @@ export default class ImageDisplayer extends Component{
     if(this.state.restaurants.length != 0){
       var indexSlots = [];
       for(let i = 0; i < this.state.restaurants[this.state.currentRestaurantIndex].photos.length; i++){
-        if(i == 0){
+        if(i == this.state.currentImageIndex){
           indexSlots.push(
             <View style = {styles.roundedRectangleInitial}  key = {i}/>
           )
@@ -45,6 +46,7 @@ export default class ImageDisplayer extends Component{
           )
         }
       }
+      this.state.currentRestaurantName = this.state.restaurants[this.state.currentRestaurantIndex].name;
       return (
         <View style = {styles.imageIndexContainer}>
           {indexSlots}
@@ -82,19 +84,12 @@ export default class ImageDisplayer extends Component{
   }
 
   updateImage(){
-    console.log(this.state.currentRestaurantIndex)
+    //console.log(this.state.currentRestaurantIndex);
+    //console.log(this.state.restaurants[this.state.currentRestaurantIndex].name);
     this.setState({
       currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
     })
   }
-
-  /*
-  updateRestaurant(){
-    this.setState({
-      currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
-    })
-  }
-  */
 
   render(){
     return (
@@ -112,6 +107,9 @@ export default class ImageDisplayer extends Component{
                 style={styles.imageControllerButton}
                 onPress = {()=>this.nextImage()}/>
             </View>
+            <Text style = {styles.restaurantName}>
+              {this.state.currentRestaurantName}
+            </Text>
           </ImageBackground>
 
         </View>
@@ -168,17 +166,27 @@ const styles = StyleSheet.create({
   },
   image:{
     flex: 1,
-    borderRadius: 10,
+    //borderRadius: 10,
     alignSelf: 'stretch',
     height: undefined,
     width: undefined,
+  },
+  restaurantName: {
+    fontSize: 20,
+    fontFamily: 'Arial',
+    fontWeight: 'bold',
+    color: 'white',
+    position: "absolute",
+    bottom: 0,
+    paddingLeft: 5,
   },
   buttonContainer:{
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginLeft: 50,
-    marginRight: 50,
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 10,
     marginBottom: 30
   },
   buttonLike:{
@@ -209,8 +217,8 @@ const styles = StyleSheet.create({
   buttonIcon:{
     flex: 1,
     borderRadius: 10,
-    marginTop:10,
-    marginBottom:5,
+    marginTop:12,
+    marginBottom:12,
     marginRight:5,
     marginLeft:5,
     alignSelf: 'stretch',
