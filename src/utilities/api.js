@@ -1,10 +1,9 @@
-import {FileSystem} from 'expo';
 const querystring = require('querystring');
 const Restaurant = require('./restaurant.object');
 
 var api = {
   async searchRestaurants (lat, lng){
-    let end_point = 'http://localhost:3000/api/restaurant/search?';
+    let end_point = 'http://10.250.231.194:3000/api/restaurant/search?';
 
     let query = {
       lat: lat,
