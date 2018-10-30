@@ -1,5 +1,5 @@
 {
-  "name": "foodme-frontend",
+  "name": "foodme",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
@@ -18,6 +18,7 @@
     "preset": "react-native"
   },
   "dependencies": {
+    "moment": "^2.22.2",
     "querystring": "^0.2.0",
     "react": "^16.5.1",
     "react-native": "~0.55.2",

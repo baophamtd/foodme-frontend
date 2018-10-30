@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity} from 'react-native';
+import {AsyncStorage, StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity} from 'react-native';
 import { BlurView } from 'react-native-blur';
 import API from '../../utilities/api';
 import Restaurant from '../../utilities/restaurant.object';
@@ -10,16 +10,42 @@ export default class ImageDisplayer extends Component{
   constructor(props){
     super(props);
     this.state = {
+      userID: '',
       currentRestaurantIndex: 0,
       currentImageIndex: 0,
       currentImage: require('../../images/loading-icon.png'),
       currentRestaurantName: '',
       currentRestaurantType: '',
+      currentRestaurantPrice: '',
+      currentRestaurantDistance: '',
       restaurants: []
     }
   }
 
   componentDidMount(){
+
+    //look for id if it has been set. Else ping server to create new one
+    AsyncStorage.getItem("id")
+    .then(value =>{
+      let id;
+      if(value == null){
+        console.log("NO VALUE");
+        API.creatUser()
+        .then(result =>{
+          id = result.id;
+          AsyncStorage.setItem("id", id);
+        })
+      }else{
+        id = value;
+        console.log(value);
+        //AsyncStorage.removeItem("id");
+      }
+
+      this.setState({
+        userID: id,
+      })
+    });
+
     navigator.geolocation.getCurrentPosition(position =>{
       API.searchRestaurants(position.coords.latitude, position.coords.longitude)
       .then((res) =>{
@@ -35,7 +61,9 @@ export default class ImageDisplayer extends Component{
   renderImageIndexes(){
     if(this.state.restaurants.length != 0){
       var indexSlots = [];
-      for(let i = 0; i < this.state.restaurants[this.state.currentRestaurantIndex].photos.length; i++){
+      let maxSizeImageDeck = this.state.restaurants[this.state.currentRestaurantIndex].photos.length;
+      if(maxSizeImageDeck > 10) maxSizeImageDeck = 10;
+      for(let i = 0; i < maxSizeImageDeck; i++){
         if(i == this.state.currentImageIndex){
           indexSlots.push(
             <View style = {styles.roundedRectangleInitial}  key = {i}/>
@@ -47,6 +75,17 @@ export default class ImageDisplayer extends Component{
         }
       }
       this.state.currentRestaurantName = this.state.restaurants[this.state.currentRestaurantIndex].name;
+      this.state.currentRestaurantPrice = '';
+      if(this.state.restaurants[this.state.currentRestaurantIndex].price == 0){
+        this.state.currentRestaurantPrice = "$";
+      }else{
+        for (let i = 0; i < this.state.restaurants[this.state.currentRestaurantIndex].price; i++) {
+          this.state.currentRestaurantPrice = this.state.currentRestaurantPrice + "$";
+        }
+      }
+
+      this.state.currentRestaurantDistance =  this.state.restaurants[this.state.currentRestaurantIndex].distance.duration.text;
+
       return (
         <View style = {styles.imageIndexContainer}>
           {indexSlots}
@@ -76,11 +115,16 @@ export default class ImageDisplayer extends Component{
   }
 
   //show next restaurants
-  nextRestaurant(){
+  nextRestaurant(action){
+    navigator.geolocation.getCurrentPosition(position =>{
+      API.takeAction(position.coords.latitude, position.coords.longitude, this.state.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, action);
+    })
+
     this.setState({
       currentRestaurantIndex: this.state.currentRestaurantIndex + 1,
       currentImageIndex:0
-    }, this.updateImage)
+    }, this.updateImage);
+
   }
 
   updateImage(){
@@ -94,7 +138,10 @@ export default class ImageDisplayer extends Component{
   render(){
     return (
       <View style = {styles.container}>
-        <View style = {styles.imageContainer}>
+        <ImageBackground style = {styles.imageContainer}
+        source = {this.state.currentImage}
+        blurRadius = {20}
+        borderRadius = {10}>
           <ImageBackground style = {styles.image}
             source = {this.state.currentImage}
             resizeMode = 'contain'>
@@ -110,14 +157,20 @@ export default class ImageDisplayer extends Component{
             <Text style = {styles.restaurantName}>
               {this.state.currentRestaurantName}
             </Text>
+            <Text style = {styles.restaurantPrice}>
+              {this.state.currentRestaurantPrice}
+            </Text>
+            <Text style = {styles.restaurantDistance}>
+              {this.state.currentRestaurantDistance}
+            </Text>
           </ImageBackground>
 
-        </View>
+        </ImageBackground>
 
 
         <View style = {styles.buttonContainer}>
           <TouchableOpacity style={styles.buttonDislike}
-            onPress = {()=>this.nextRestaurant()}>
+            onPress = {()=>this.nextRestaurant('dislike')}>
             <Image
               style = {styles.buttonIcon}
               source = {require('../../images/thumb-down-icon.png')}
@@ -132,7 +185,7 @@ export default class ImageDisplayer extends Component{
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.buttonLike}
-          onPress = {()=>this.nextRestaurant()}>
+          onPress = {()=>this.nextRestaurant('like')}>
             <Image
               style = {styles.buttonIcon}
               source = {require('../../images/heart-icon.png')}
@@ -162,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#a5882b'
+    backgroundColor: '#a5882b',
   },
   image:{
     flex: 1,
@@ -172,6 +225,27 @@ const styles = StyleSheet.create({
     width: undefined,
   },
   restaurantName: {
+    fontSize: 20,
+    fontFamily: 'Arial',
+    fontWeight: 'bold',
+    color: 'white',
+    position: "absolute",
+    bottom: 0,
+    marginBottom: 30,
+    paddingLeft: 5,
+  },
+  restaurantPrice: {
+    fontSize: 20,
+    fontFamily: 'Arial',
+    fontWeight: 'bold',
+    color: 'white',
+    position: "absolute",
+    bottom: 0,
+    paddingLeft: 5,
+    marginBottom: 30,
+    alignSelf: 'flex-end',
+  },
+  restaurantDistance: {
     fontSize: 20,
     fontFamily: 'Arial',
     fontWeight: 'bold',
