@@ -38,7 +38,7 @@ var api = {
     })
   },
 
-  async creatUser(){
+  async createUser(){
     let url = END_POINT+'/api/user/create';
     let payload = {};
     return fetch(url, {

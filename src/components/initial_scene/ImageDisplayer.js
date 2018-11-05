@@ -30,7 +30,7 @@ export default class ImageDisplayer extends Component{
       let id;
       if(value == null){
         console.log("NO VALUE");
-        API.creatUser()
+        API.createUser()
         .then(result =>{
           id = result.id;
           AsyncStorage.setItem("id", id);
