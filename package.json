@@ -18,12 +18,16 @@
     "preset": "react-native"
   },
   "dependencies": {
+    "create-react-class": "^15.6.3",
     "moment": "^2.22.2",
+    "native-base": "^2.8.1",
     "querystring": "^0.2.0",
     "react": "^16.5.1",
     "react-native": "~0.55.2",
     "react-native-blur": "^3.2.2",
     "react-native-cli": "^2.0.1",
+    "react-native-deck-swiper": "^1.5.22",
+    "react-native-swiper": "^1.5.13",
     "react-native-vector-icons": "^4.6.0",
     "watchman": "^1.0.0"
   }

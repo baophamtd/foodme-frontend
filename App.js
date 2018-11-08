@@ -1,8 +1,9 @@
 import React from 'react';
 import API from './src/utilities/api';
 
-import { AsyncStorage, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity } from 'react-native';
+import { AsyncStorage, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
 import ImageDisplayer from './src/components/initial_scene/ImageDisplayer';
+import Swiper from 'react-native-deck-swiper';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
@@ -15,12 +16,12 @@ const Users = [
   { id: "5", uri: require('./assets/5.jpg') },
 ]
 
+
 export default class App extends React.Component {
 
   constructor() {
     super()
 
-    this.position = new Animated.ValueXY()
     this.state = {
       userID: '',
       currentRestaurantIndex: 0,
@@ -30,78 +31,9 @@ export default class App extends React.Component {
       currentRestaurantType: '',
       currentRestaurantPrice: '',
       currentRestaurantDistance: '',
+      firstRestaurant: true,
       restaurants: []
     }
-
-    this.rotate = this.position.x.interpolate({
-      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      outputRange: ['-10deg', '0deg', '10deg'],
-      extrapolate: 'clamp'
-    })
-
-    this.rotateAndTranslate = {
-      transform: [{
-        rotate: this.rotate
-      },
-      ...this.position.getTranslateTransform()
-      ]
-    }
-
-    this.likeOpacity = this.position.x.interpolate({
-      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      outputRange: [0, 0, 1],
-      extrapolate: 'clamp'
-    })
-    this.dislikeOpacity = this.position.x.interpolate({
-      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      outputRange: [1, 0, 0],
-      extrapolate: 'clamp'
-    })
-
-    this.nextCardOpacity = this.position.x.interpolate({
-      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      outputRange: [1, 0, 1],
-      extrapolate: 'clamp'
-    })
-    this.nextCardScale = this.position.x.interpolate({
-      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      outputRange: [1, 0.8, 1],
-      extrapolate: 'clamp'
-    })
-
-    this.PanResponder = PanResponder.create({
-
-      onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onPanResponderMove: (evt, gestureState) => {
-
-        this.position.setValue({ x: gestureState.dx, y: gestureState.dy })
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-
-        if (gestureState.dx > 120) {
-          Animated.spring(this.position, {
-            toValue: { x: SCREEN_WIDTH + 100, y: gestureState.dy }
-          }).start(() => {
-            this.nextRestaurant();
-
-          })
-        }
-        else if (gestureState.dx < -120) {
-          Animated.spring(this.position, {
-            toValue: { x: -SCREEN_WIDTH - 100, y: gestureState.dy }
-          }).start(() => {
-            this.nextRestaurant();
-
-          })
-        }
-        else {
-          Animated.spring(this.position, {
-            toValue: { x: 0, y: 0 },
-            friction: 4
-          }).start()
-        }
-      }
-    })
 
   }
   componentDidMount() {
@@ -127,6 +59,7 @@ export default class App extends React.Component {
       })
     });
 
+/*
     navigator.geolocation.getCurrentPosition(position =>{
       API.searchRestaurants(position.coords.latitude, position.coords.longitude)
       .then((res) =>{
@@ -134,29 +67,49 @@ export default class App extends React.Component {
           restaurants: res,
           currentImage: {uri:res[0].photos[0]}
         })
+        //console.log(this.state.restaurants.length)
       })
     })
+*/
+
+    setTimeout(function () {
+      navigator.geolocation.getCurrentPosition(position =>{
+        API.searchRestaurants(position.coords.latitude, position.coords.longitude)
+        .then((res) =>{
+          this.setState({
+            restaurants: res,
+            currentImage: {uri:res[0].photos[0]}
+          })
+        })
+      })
+    }.bind(this), 1000);
+
   }
 
   //show next restaurants
-  nextRestaurant(action){
+  nextRestaurant(index, action){
     navigator.geolocation.getCurrentPosition(position =>{
       API.takeAction(position.coords.latitude, position.coords.longitude, this.state.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, action);
     })
 
-    this.setState({
-      currentRestaurantIndex: this.state.currentRestaurantIndex + 1,
-      currentImageIndex:0,
-      //currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
-    }, this.updateImage(), this.position.setValue({ x: 0, y: 0 }));
-
+    if(index < this.state.restaurants.length - 1){
+      this.setState((state, props) => ({
+        currentRestaurantIndex: index + 1,
+        currentImageIndex:0,
+        firstRestaurant: false,
+      }));
+    }
   }
 
-  updateImage(){
-    console.log(this.state.currentRestaurantIndex);
-    this.setState({
-      currentImage: {uri:this.state.restaurants[this.state.currentRestaurantIndex].photos[this.state.currentImageIndex]}
-    })
+  previousRestaurant(index){
+    if(index == 1){
+      this.setState((state, props) => ({
+        currentRestaurantIndex: index - 1,
+        currentImageIndex:0,
+        firstRestaurant: true,
+      }));
+      console.log(this.state.firstRestaurant)
+    }
   }
 
   renderHeader(){
@@ -165,7 +118,6 @@ export default class App extends React.Component {
 
   //render the image index on top of the image deck
   renderImageIndexes(){
-    //console.log("THIS IS CALLED");
     if(this.state.restaurants.length != 0){
       var indexSlots = [];
       let maxSizeImageDeck = this.state.restaurants[this.state.currentRestaurantIndex].photos.length;
@@ -206,7 +158,7 @@ export default class App extends React.Component {
     return (
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.buttonController}
-          onPress = {()=>this.nextRestaurant('dislike')}>
+          onPress = {()=>{this.refs.deck.swipeLeft()}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('./src/images/previous-icon2.png')}
@@ -214,7 +166,7 @@ export default class App extends React.Component {
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonMain}
-        onPress = {()=>this.nextRestaurant('like')}>
+        onPress = {()=>{}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('./src/images/heart-icon2.png')}
@@ -229,7 +181,7 @@ export default class App extends React.Component {
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonController}
-          onPress = {()=>this.nextRestaurant('dislike')}>
+          onPress = {()=>{this.refs.deck.swipeRight()}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('./src/images/next-icon2.png')}
@@ -240,140 +192,140 @@ export default class App extends React.Component {
     )
   }
 
-  renderCurrentRestaurantImageDeck(){
-    return(
-      <ImageBackground style = {styles.imageContainer}
-      source = {this.state.currentImage}
-      blurRadius = {20}
-      borderRadius = {10}>
-        <ImageBackground style = {styles.image}
-          source = {this.state.currentImage}
-          resizeMode = 'contain'>
-          {this.renderImageIndexes()};
-        </ImageBackground>
-
-      </ImageBackground>
-    )
+  nextImage(){
+    console.log("CLICK");
+    if(this.state.currentImageIndex < 10){
+      this.setState({
+        currentImageIndex: this.state.currentImageIndex + 1,
+      }, this.updateImage);
+      console.log(this.state.currentImageIndex)
+    }
   }
 
-  renderNextRestaurantImageDeck(){
-    return(
-      <ImageBackground style = {styles.imageContainer}
-      source = {{uri:this.state.restaurants[this.state.currentRestaurantIndex+1].photos[0]}}
-      blurRadius = {20}
-      borderRadius = {10}>
-        <ImageBackground style = {styles.image}
-          source = {{uri:this.state.restaurants[this.state.currentRestaurantIndex+1].photos[0]}}
-          resizeMode = 'contain'>
-          {this.renderImageIndexes()};
-        </ImageBackground>
-
-      </ImageBackground>
-    )
+  previousImage(){
+    if(this.state.currentImageIndex > 0){
+      this.setState((state, props) => ({
+        currentImageIndex: this.state.currentImageIndex - 1,
+      }, this.updateImage));
+    }
   }
 
-  renderPreviousRestaurantImageDeck(){
-    return(
-      <ImageBackground style = {styles.imageContainer}
-      source = {{uri:this.state.restaurants[this.state.currentRestaurantIndex-1].photos[0]}}
-      blurRadius = {20}
-      borderRadius = {10}>
-        <ImageBackground style = {styles.image}
-          source = {{uri:this.state.restaurants[this.state.currentRestaurantIndex-1].photos[0]}}
-          resizeMode = 'contain'>
-          {this.renderImageIndexes()};
-        </ImageBackground>
-
-      </ImageBackground>
-    )
+  updateImage(){
+    this.setState({ state: this.state });
+    console.log(this.state.currentImageIndex);
   }
 
-  renderImageDeck(){
 
-    return this.state.restaurants.map((item, i) => {
-
-      if (i < this.state.currentImageIndex) {
-        return null;
-      }
-      else if (i == this.state.currentImageIndex) {
-
-        return (
-          <Animated.View
-            {...this.PanResponder.panHandlers}
-            key={item.id} style={[this.rotateAndTranslate, { height: SCREEN_HEIGHT - SCREEN_HEIGHT/4.5, width: SCREEN_WIDTH, padding: 10, position: 'absolute'}]}>
-            <Animated.View style={{ opacity: this.likeOpacity, transform: [{ rotate: '-10deg' }], position: 'absolute', top: 50, left: 40, zIndex: 1000 }}>
-              <Text style={styles.nextPreviousText}>NEXT</Text>
-
-            </Animated.View>
-
-            <Animated.View style={{ opacity: this.dislikeOpacity, transform: [{ rotate: '10deg' }], position: 'absolute', top: 50, right: 40, zIndex: 1000 }}>
-              <Text style={styles.nextPreviousText}>PREVIOUS</Text>
-
-            </Animated.View>
-            {this.renderCurrentRestaurantImageDeck()}
-            {/*
-            <Image
-              style={{ flex: 1, height: null, width: null, resizeMode: 'cover', borderRadius: 20 }}
-              source={item.uri} />
-              */}
-
-          </Animated.View>
-        )
-      }
-      else {
-        return (
-          <Animated.View
-            {...this.PanResponder.panHandlers}
-            key={item.id} style={[{
-              opacity: this.nextCardOpacity,
-              transform: [{ scale: this.nextCardScale }],
-              height: SCREEN_HEIGHT - SCREEN_HEIGHT/4.5, width: SCREEN_WIDTH, padding: 10, position: 'absolute',
-            }]}>
-            <Animated.View style={{ opacity: 0, transform: [{ rotate: '-30deg' }], position: 'absolute', top: 50, left: 40, zIndex: 1000 }}>
-              <Text style={styles.nextPreviousText}>LIKE</Text>
-
-            </Animated.View>
-
-            <Animated.View style={{ opacity: 0, transform: [{ rotate: '30deg' }], position: 'absolute', top: 50, right: 40, zIndex: 1000 }}>
-              <Text style={{ borderWidth: 1, borderColor: 'red', color: 'red', fontSize: 32, fontWeight: '800', padding: 10 }}>NOPE</Text>
-
-            </Animated.View>
-
-              {this.renderNextRestaurantImageDeck()}
-          </Animated.View>
-        )
-      }
-    }).reverse()
-  }
 
   render() {
+    if(this.state.restaurants.length === 0) return null;
+
     return (
-
-      <View style={{ flex: 1 , backgroundColor: '#efede6'}}>
-        <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
+        <View style={{ flex: 1 ,backgroundColor: 'blue'}}>
 
         </View>
-        <View style={{ flex: 7 }}>
-        {this.renderImageDeck()}
-        </View>
+        <View style={{ flex: 8 , backgroundColor: 'red'}}>
+          <Swiper
+              ref="deck"
+              cards={this.state.restaurants}
+              renderCard={(card) => {
+                return(
+                  <ImageBackground
+                    style = {styles.card}
+                    source = {{uri:card.photos[this.state.currentImageIndex]}}
+                    borderRadius = {20}
+                  >
+                  {this.renderImageIndexes()};
+                  <View
+                    style = {styles.imageControllerButtonContainer}
+                  >
+                    <TouchableOpacity
+                      style = {styles.imageControllerButton}
+                      onPress = {()=>this.previousImage()}/>
+                    <TouchableOpacity
+                      style = {styles.imageZoom}/>
+                    <TouchableOpacity
+                      style = {styles.imageControllerButton}
+                      onPress = {()=>this.nextImage()}/>
+                  </View>
+                  {/*
+                    <ImageBackground
+                      style = {styles.image}
+                      source = {{uri:card.photos[this.state.currentImageIndex]}}
+                      resizeMode = 'cover'
+                    >
 
+                      {this.renderImageIndexes()};
+                      <View
+                        style = {styles.imageControllerButtonContainer}
+                      >
+                        <TouchableOpacity
+                          style = {styles.imageControllerButton}
+                          onPress = {()=>this.previousImage()}/>
+                        <TouchableOpacity
+                          style = {styles.imageZoom}/>
+                        <TouchableOpacity
+                          style = {styles.imageControllerButton}
+                          onPress = {()=>this.nextImage()}/>
+                      </View>
+
+                    </ImageBackground>
+                    */}
+                  </ImageBackground>
+                )
+              }}
+              onSwipedLeft={(cardIndex) => {
+                this.previousRestaurant(cardIndex);
+              }}
+              onSwipedRight={(cardIndex) => {
+                this.nextRestaurant(cardIndex);
+              }}
+              onSwipedAll={() => {console.log('onSwipedAll')}}
+              cardIndex={0}
+              backgroundColor={'#efede6'}
+              showSecondCard = {true}
+              stackSize= {2}
+              disableLeftSwipe = {this.state.firstRestaurant}
+              disableBottomSwipe = {true}
+              goBackToPreviousCardOnSwipeLeft = {true}
+              stackSeparation = {1}
+              >
+            </Swiper>
+        </View>
         {this.renderFooter()}
 
-
       </View>
-
       //<ImageDisplayer/>
 
     );
+
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+  restaurantDeck: {
+    flex: 8,
+    //backgroundColor: '#efede6',
+    //margin: 10,
+    top: 100,
+
+  },
+  card: {
+    flex: 0.82,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: "#efede6",
+    justifyContent: "center",
+    backgroundColor: "white",
+    marginTop: -30,
+    marginLeft: -10,
+    marginRight: -10,
+  },
+  text: {
+    textAlign: "center",
+    fontSize: 50,
+    backgroundColor: "transparent"
   },
   nextPreviousText:{
     borderWidth: 1,
@@ -385,14 +337,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonContainer:{
-    flex: 0.7,
+    flex: 1,
     //backgroundColor: 'red',
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginLeft: 10,
     marginRight: 10,
     //marginTop: 50,
-    marginBottom: 25,
+    marginBottom: 10,
   },
   buttonMain:{
     borderRadius: 100,
@@ -418,26 +370,29 @@ const styles = StyleSheet.create({
   },
   imageContainer:{
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#E8E8E8",
+    justifyContent: "center",
+    backgroundColor: "white",
+    borderRadius:20,
   },
   image:{
     flex: 1,
     alignSelf: 'stretch',
     height: undefined,
     width: undefined,
+    borderRadius:20,
   },
   imageIndexContainer:{
     alignSelf: 'stretch',
-    height: 5,
+    height: 3,
     borderRadius:10,
     position: 'relative',
     top: 5,
     backgroundColor: 'transparent',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginRight:10,
-    marginLeft:10,
+    marginRight:15,
+    marginLeft:15,
     alignItems: 'stretch'
   },
   roundedRectangleInitial: {
@@ -454,4 +409,19 @@ const styles = StyleSheet.create({
     marginLeft:1,
     marginRight:1
   },
+  imageControllerButtonContainer:{
+    flex:1,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    flexDirection: 'row',
+  },
+  imageControllerButton:{
+    flex:1,
+    //backgroundColor: 'green',
+    borderRadius: 10,
+  },
+  imageZoom:{
+    flex:2,
+    //backgroundColor: 'blue',
+  }
 });
