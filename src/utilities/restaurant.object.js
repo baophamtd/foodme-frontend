@@ -6,6 +6,7 @@ class Restaurant {
     this.name = name;
     this.price = price;
     this.distance = distance;
+    this.currentImageIndex = 0;
   }
 }
 

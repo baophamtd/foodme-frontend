@@ -1,9 +1,12 @@
 import React from 'react';
 import API from './src/utilities/api';
 
-import { AsyncStorage, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
+import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
 import ImageDisplayer from './src/components/initial_scene/ImageDisplayer';
 import Swiper from 'react-native-deck-swiper';
+import ImageViewer from 'react-native-image-zoom-viewer';
+
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
@@ -25,13 +28,14 @@ export default class App extends React.Component {
     this.state = {
       userID: '',
       currentRestaurantIndex: 0,
-      currentImageIndex: 0,
       currentImage: require('./src/images/loading-icon.png'),
       currentRestaurantName: '',
       currentRestaurantType: '',
       currentRestaurantPrice: '',
       currentRestaurantDistance: '',
+      currentRestaurantImages:[],
       firstRestaurant: true,
+      zoomingMode: false,
       restaurants: []
     }
 
@@ -78,7 +82,8 @@ export default class App extends React.Component {
         .then((res) =>{
           this.setState({
             restaurants: res,
-            currentImage: {uri:res[0].photos[0]}
+            currentImage: {uri:res[0].photos[0]},
+            currentRestaurantImages: res[0].photos,
           })
         })
       })
@@ -91,24 +96,55 @@ export default class App extends React.Component {
     navigator.geolocation.getCurrentPosition(position =>{
       API.takeAction(position.coords.latitude, position.coords.longitude, this.state.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, action);
     })
-
+/*
+    const { restaurants, currentRestaurantIndex } = this.state;
+    this.setState({
+      currentRestaurantIndex: index + 1,
+      restaurants: [
+        ...restaurants.slice(0, currentRestaurantIndex + 1), // if not familiar with this look for spread operator
+        {
+          ...restaurants[currentRestaurantIndex + 1],
+          currentImageIndex: 0,
+        },
+        ...restaurants.slice(currentRestaurantIndex + 2, restaurants.length)
+      ],
+      firstRestaurant: false,
+    });
+*/
     if(index < this.state.restaurants.length - 1){
-      this.setState((state, props) => ({
+      const { restaurants, currentRestaurantIndex } = this.state;
+      this.setState({
         currentRestaurantIndex: index + 1,
-        currentImageIndex:0,
+        restaurants: [
+          ...restaurants.slice(0, currentRestaurantIndex + 1), // if not familiar with this look for spread operator
+          {
+            ...restaurants[currentRestaurantIndex + 1],
+            currentImageIndex: 0,
+          },
+          ...restaurants.slice(currentRestaurantIndex + 2, restaurants.length)
+        ],
         firstRestaurant: false,
-      }));
+      });
     }
   }
 
   previousRestaurant(index){
+    const { restaurants, currentRestaurantIndex } = this.state;
+    this.setState({
+      currentRestaurantIndex: index - 1,
+      restaurants: [
+        ...restaurants.slice(0, currentRestaurantIndex-1), // if not familiar with this look for spread operator
+        {
+          ...restaurants[currentRestaurantIndex-1],
+          currentImageIndex: 0,
+        },
+        ...restaurants.slice(currentRestaurantIndex, restaurants.length)
+      ],
+    });
     if(index == 1){
       this.setState((state, props) => ({
-        currentRestaurantIndex: index - 1,
-        currentImageIndex:0,
         firstRestaurant: true,
       }));
-      console.log(this.state.firstRestaurant)
     }
   }
 
@@ -116,14 +152,40 @@ export default class App extends React.Component {
 
   }
 
+  switchToZoomView(show){
+    this.setState((state, props) => ({
+      zoomingMode: show,
+    }));
+  }
+
+  updateZoomView(){
+    if(this.state.currentRestaurantImages.length == 0) return null;
+    return (
+            <Modal
+              visible={this.state.zoomingMode}
+              transparent={true}
+              >
+                <ImageViewer
+                imageUrls={this.state.currentRestaurantImages}
+                flipThreshold={250}
+                enableSwipeDown={true}
+                index={this.state.restaurants[this.state.currentRestaurantIndex].currentImageIndex}
+                onSwipeDown={() =>{
+                  this.switchToZoomView(false);
+                }}
+                />
+            </Modal>
+        )
+  }
+
   //render the image index on top of the image deck
-  renderImageIndexes(){
-    if(this.state.restaurants.length != 0){
+  renderImageIndexes(cardIndex){
+    if(this.state.restaurants.length != 0 && this.state.currentRestaurantIndex == cardIndex){
       var indexSlots = [];
       let maxSizeImageDeck = this.state.restaurants[this.state.currentRestaurantIndex].photos.length;
       if(maxSizeImageDeck > 10) maxSizeImageDeck = 10;
       for(let i = 0; i < maxSizeImageDeck; i++){
-        if(i == this.state.currentImageIndex){
+        if(i == this.state.restaurants[this.state.currentRestaurantIndex].currentImageIndex){
           indexSlots.push(
             <View style = {styles.roundedRectangleInitial}  key = {i}/>
           )
@@ -154,7 +216,7 @@ export default class App extends React.Component {
     }
   }
 
-  renderFooter(){
+  renderButtons(){
     return (
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.buttonController}
@@ -192,29 +254,85 @@ export default class App extends React.Component {
     )
   }
 
+  renderCard = (card, cardIndex) => {
+    return(
+      <ImageBackground
+        style = {styles.card}
+        source = {{uri:card.photos[card.currentImageIndex].url}}
+        borderRadius = {20}
+      >
+      {this.renderImageIndexes(cardIndex)};
+      <View
+        style = {styles.imageControllerButtonContainer}
+      >
+        <TouchableOpacity
+          style = {styles.imageControllerButton}
+          onPress = {()=>this.previousImage()}/>
+        <TouchableOpacity
+          style = {styles.imageZoom}
+          onPress = {()=>this.switchToZoomView(true)}/>
+        <TouchableOpacity
+          style = {styles.imageControllerButton}
+          onPress = {()=>this.nextImage()}/>
+      </View>
+      {/*
+        <ImageBackground
+          style = {styles.image}
+          source = {{uri:card.photos[this.state.currentImageIndex]}}
+          resizeMode = 'cover'
+        >
+
+          {this.renderImageIndexes()};
+          <View
+            style = {styles.imageControllerButtonContainer}
+          >
+            <TouchableOpacity
+              style = {styles.imageControllerButton}
+              onPress = {()=>this.previousImage()}/>
+            <TouchableOpacity
+              style = {styles.imageZoom}/>
+            <TouchableOpacity
+              style = {styles.imageControllerButton}
+              onPress = {()=>this.nextImage()}/>
+          </View>
+
+        </ImageBackground>
+        */}
+      </ImageBackground>
+    )
+  }
+
   nextImage(){
-    console.log("CLICK");
-    if(this.state.currentImageIndex < 10){
+    const { restaurants, currentRestaurantIndex } = this.state;
+    if(restaurants[currentRestaurantIndex].currentImageIndex < 9){
       this.setState({
-        currentImageIndex: this.state.currentImageIndex + 1,
-      }, this.updateImage);
-      console.log(this.state.currentImageIndex)
+        restaurants: [
+          ...restaurants.slice(0, currentRestaurantIndex), // if not familiar with this look for spread operator
+          {
+            ...restaurants[currentRestaurantIndex],
+            currentImageIndex: restaurants[currentRestaurantIndex].currentImageIndex+1
+          },
+          ...restaurants.slice(currentRestaurantIndex+1, restaurants.length)
+        ],
+      });
     }
   }
 
   previousImage(){
-    if(this.state.currentImageIndex > 0){
-      this.setState((state, props) => ({
-        currentImageIndex: this.state.currentImageIndex - 1,
-      }, this.updateImage));
+    const { restaurants, currentRestaurantIndex } = this.state;
+    if(restaurants[currentRestaurantIndex].currentImageIndex > 0){
+      this.setState({
+        restaurants: [
+          ...restaurants.slice(0, currentRestaurantIndex), // if not familiar with this look for spread operator
+          {
+            ...restaurants[currentRestaurantIndex],
+            currentImageIndex: restaurants[currentRestaurantIndex].currentImageIndex-1
+          },
+          ...restaurants.slice(currentRestaurantIndex+1, restaurants.length)
+        ],
+      });
     }
   }
-
-  updateImage(){
-    this.setState({ state: this.state });
-    console.log(this.state.currentImageIndex);
-  }
-
 
 
   render() {
@@ -229,52 +347,9 @@ export default class App extends React.Component {
           <Swiper
               ref="deck"
               cards={this.state.restaurants}
-              renderCard={(card) => {
-                return(
-                  <ImageBackground
-                    style = {styles.card}
-                    source = {{uri:card.photos[this.state.currentImageIndex]}}
-                    borderRadius = {20}
-                  >
-                  {this.renderImageIndexes()};
-                  <View
-                    style = {styles.imageControllerButtonContainer}
-                  >
-                    <TouchableOpacity
-                      style = {styles.imageControllerButton}
-                      onPress = {()=>this.previousImage()}/>
-                    <TouchableOpacity
-                      style = {styles.imageZoom}/>
-                    <TouchableOpacity
-                      style = {styles.imageControllerButton}
-                      onPress = {()=>this.nextImage()}/>
-                  </View>
-                  {/*
-                    <ImageBackground
-                      style = {styles.image}
-                      source = {{uri:card.photos[this.state.currentImageIndex]}}
-                      resizeMode = 'cover'
-                    >
-
-                      {this.renderImageIndexes()};
-                      <View
-                        style = {styles.imageControllerButtonContainer}
-                      >
-                        <TouchableOpacity
-                          style = {styles.imageControllerButton}
-                          onPress = {()=>this.previousImage()}/>
-                        <TouchableOpacity
-                          style = {styles.imageZoom}/>
-                        <TouchableOpacity
-                          style = {styles.imageControllerButton}
-                          onPress = {()=>this.nextImage()}/>
-                      </View>
-
-                    </ImageBackground>
-                    */}
-                  </ImageBackground>
-                )
-              }}
+              renderCard={
+                this.renderCard
+              }
               onSwipedLeft={(cardIndex) => {
                 this.previousRestaurant(cardIndex);
               }}
@@ -282,18 +357,20 @@ export default class App extends React.Component {
                 this.nextRestaurant(cardIndex);
               }}
               onSwipedAll={() => {console.log('onSwipedAll')}}
-              cardIndex={0}
+              onTapCard={() =>{}}
+              cardIndex={this.state.currentRestaurantIndex}
               backgroundColor={'#efede6'}
               showSecondCard = {true}
-              stackSize= {2}
+              stackSize= {this.state.restaurants.length}
               disableLeftSwipe = {this.state.firstRestaurant}
               disableBottomSwipe = {true}
               goBackToPreviousCardOnSwipeLeft = {true}
               stackSeparation = {1}
               >
             </Swiper>
+            {this.updateZoomView()}
         </View>
-        {this.renderFooter()}
+        {this.renderButtons()}
 
       </View>
       //<ImageDisplayer/>
@@ -312,13 +389,13 @@ const styles = StyleSheet.create({
 
   },
   card: {
-    flex: 0.82,
+    flex: 0.845,
     borderRadius: 20,
     borderWidth: 0.5,
     borderColor: "#efede6",
     justifyContent: "center",
     backgroundColor: "white",
-    marginTop: -30,
+    marginTop: -50,
     marginLeft: -10,
     marginRight: -10,
   },

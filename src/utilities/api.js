@@ -4721,7 +4721,11 @@ var api = {
               maxheight: 1000,
               photo_reference: photo.photo_reference
         };
-        return `${endPoint}${querystring.stringify(uri)}`;
+        return {
+          url:`${endPoint}${querystring.stringify(uri)}`,
+          width: 1000,
+          height: 1000,
+        };
       })
       return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance});
     })
