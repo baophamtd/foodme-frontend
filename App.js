@@ -11,13 +11,6 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
 import Icon from 'react-native-vector-icons/Ionicons'
-const Users = [
-  { id: "1", uri: require('./assets/1.jpg') },
-  { id: "2", uri: require('./assets/2.jpg') },
-  { id: "3", uri: require('./assets/6.jpg') },
-  { id: "4", uri: require('./assets/4.jpg') },
-  { id: "5", uri: require('./assets/5.jpg') },
-]
 
 
 export default class App extends React.Component {
@@ -33,7 +26,6 @@ export default class App extends React.Component {
       currentRestaurantType: '',
       currentRestaurantPrice: '',
       currentRestaurantDistance: '',
-      currentRestaurantImages:[],
       firstRestaurant: true,
       zoomingMode: false,
       restaurants: []
@@ -83,7 +75,6 @@ export default class App extends React.Component {
           this.setState({
             restaurants: res,
             currentImage: {uri:res[0].photos[0]},
-            currentRestaurantImages: res[0].photos,
           })
         })
       })
@@ -159,16 +150,17 @@ export default class App extends React.Component {
   }
 
   updateZoomView(){
-    if(this.state.currentRestaurantImages.length == 0) return null;
+    if(this.state.restaurants[this.state.currentRestaurantIndex].photos.length == 0) return null;
     return (
             <Modal
               visible={this.state.zoomingMode}
               transparent={true}
               >
                 <ImageViewer
-                imageUrls={this.state.currentRestaurantImages}
+                imageUrls={this.state.restaurants[this.state.currentRestaurantIndex].photos}
                 flipThreshold={250}
                 enableSwipeDown={true}
+                swipeDownThreshold={100}
                 index={this.state.restaurants[this.state.currentRestaurantIndex].currentImageIndex}
                 onSwipeDown={() =>{
                   this.switchToZoomView(false);
@@ -216,6 +208,48 @@ export default class App extends React.Component {
     }
   }
 
+  renderTexts(cardIndex){
+    const { restaurants } = this.state;
+    return (
+      <View style={styles.textContainer}>
+        <View style={{flex:4, marginLeft:5}}>
+          <Text style={{
+            fontSize: 20,
+            backgroundColor: 'transparent',
+            fontWeight: 'bold',
+            color: 'white',
+            marginBottom:5,
+            fontFamily: "Gotham Rounded",
+          }}>{restaurants[cardIndex].name}</Text>
+          <Text style={{
+            fontWeight: 'bold',
+            color: 'white',
+            fontSize:17}}>{restaurants[cardIndex].distance.duration.text}</Text>
+        </View>
+        <View style={{flex:1}}>
+          {this.renderPrice(restaurants[cardIndex].price)}
+        </View>
+      </View>
+    )
+  }
+
+  renderPrice(price){
+    let priceString = '';
+    for(let i = 0; i< price; i++) {
+      priceString = priceString + '$';
+    }
+    return (
+      <Text style={{
+        color: 'white',
+        textAlign: 'right',
+        fontSize: 20,
+        fontWeight: 'bold',
+        fontFamily: "Gotham Rounded",
+        marginRight: 5
+      }}>{priceString}</Text>
+    )
+  }
+
   renderButtons(){
     return (
       <View style={styles.buttonContainer}>
@@ -254,7 +288,7 @@ export default class App extends React.Component {
     )
   }
 
-  renderCard = (card, cardIndex) => {
+  renderCard(card, cardIndex){
     return(
       <ImageBackground
         style = {styles.card}
@@ -275,6 +309,7 @@ export default class App extends React.Component {
           style = {styles.imageControllerButton}
           onPress = {()=>this.nextImage()}/>
       </View>
+      {this.renderTexts(cardIndex)}
       {/*
         <ImageBackground
           style = {styles.image}
@@ -347,9 +382,9 @@ export default class App extends React.Component {
           <Swiper
               ref="deck"
               cards={this.state.restaurants}
-              renderCard={
-                this.renderCard
-              }
+              renderCard={(card, cardIndex) =>{
+                return this.renderCard(card, cardIndex);
+              }}
               onSwipedLeft={(cardIndex) => {
                 this.previousRestaurant(cardIndex);
               }}
@@ -398,11 +433,6 @@ const styles = StyleSheet.create({
     marginTop: -50,
     marginLeft: -10,
     marginRight: -10,
-  },
-  text: {
-    textAlign: "center",
-    fontSize: 50,
-    backgroundColor: "transparent"
   },
   nextPreviousText:{
     borderWidth: 1,
@@ -500,5 +530,11 @@ const styles = StyleSheet.create({
   imageZoom:{
     flex:2,
     //backgroundColor: 'blue',
-  }
+  },
+  textContainer:{
+    flex:0.2,
+    //backgroundColor: 'red',
+    flexDirection: 'row',
+    marginBottom: 10
+  },
 });

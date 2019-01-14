@@ -119,7 +119,7 @@ let restaurantsTemp =     [
                 "value": 7505
             },
             "duration": {
-                "text": "12 mins",
+                "text": "32 mins",
                 "value": 731
             },
             "durationInTraffic": {
@@ -4680,8 +4680,8 @@ let restaurantsTemp =     [
 
 var api = {
   async searchRestaurants (lat, lng){
-/*
-    let query = {
+
+/*    let query = {
       lat: lat,
       lng: lng,
       minPrice: 0,
@@ -4704,13 +4704,17 @@ var api = {
                 maxheight: 1000,
                 photo_reference: photo.photo_reference
           };
-          return `${endPoint}${querystring.stringify(uri)}`;
+          return {
+            url:`${endPoint}${querystring.stringify(uri)}`,
+            width: 1000,
+            height: 1000,
+          };
         })
         return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance});
       })
       return restaurants;
-    })*/
-
+    })
+*/
 
     let restaurants = restaurantsTemp.map(restaurant => {
       let photos = restaurant.photos.map(photo =>{
