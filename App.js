@@ -219,7 +219,7 @@ export default class App extends React.Component {
             fontWeight: 'bold',
             color: 'white',
             marginBottom:5,
-            fontFamily: "Gotham Rounded",
+            //fontFamily: "Gotham Rounded",
           }}>{restaurants[cardIndex].name}</Text>
           <Text style={{
             fontWeight: 'bold',
@@ -244,7 +244,7 @@ export default class App extends React.Component {
         textAlign: 'right',
         fontSize: 20,
         fontWeight: 'bold',
-        fontFamily: "Gotham Rounded",
+        //fontFamily: "Gotham Rounded",
         marginRight: 5
       }}>{priceString}</Text>
     )
@@ -290,12 +290,10 @@ export default class App extends React.Component {
 
   renderCard(card, cardIndex){
     return(
-      <ImageBackground
-        style = {styles.card}
+      <ImageBackground style = {styles.card}
         source = {{uri:card.photos[card.currentImageIndex].url}}
-        borderRadius = {20}
-      >
-      {this.renderImageIndexes(cardIndex)};
+        borderRadius = {20}>
+        {this.renderImageIndexes(cardIndex)}
       <View
         style = {styles.imageControllerButtonContainer}
       >

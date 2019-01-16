@@ -154,15 +154,9 @@ export default class ImageDisplayer extends Component{
                 style={styles.imageControllerButton}
                 onPress = {()=>this.nextImage()}/>
             </View>
-            <Text style = {styles.restaurantName}>
-              {this.state.currentRestaurantName}
-            </Text>
-            <Text style = {styles.restaurantPrice}>
-              {this.state.currentRestaurantPrice}
-            </Text>
-            <Text style = {styles.restaurantDistance}>
-              {this.state.currentRestaurantDistance}
-            </Text>
+            <Text style = {styles.restaurantName}>{this.state.currentRestaurantName}</Text>
+            <Text style = {styles.restaurantPrice}>{this.state.currentRestaurantPrice}</Text>
+            <Text style = {styles.restaurantDistance}>{this.state.currentRestaurantDistance}</Text>
           </ImageBackground>
 
         </ImageBackground>
