@@ -2,7 +2,7 @@ import React from 'react';
 import API from './src/utilities/api';
 
 import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
-import ImageDisplayer from './src/components/initial_scene/ImageDisplayer';
+import ImageDisplayer from './src/components/scenes/ImageDisplayer';
 import Swiper from 'react-native-deck-swiper';
 import ImageViewer from 'react-native-image-zoom-viewer';
 
