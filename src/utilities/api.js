@@ -2,7 +2,7 @@ const querystring = require('querystring');
 const moment = require('moment');
 const Restaurant = require('./restaurant.object');
 const WEATHER_API_KEY = 'a3a61defc8d1a149a9276e19249fd38d';
-const END_POINT = 'http://52.53.213.165:3000';
+const END_POINT = 'http://localhost:3000';
 
 let restaurantsTemp =     [
   {
@@ -4736,9 +4736,12 @@ var api = {
     return restaurants;
   },
 
-  async createUser(){
+  async createUser(facebook_id, short_lived_token){
     let url = END_POINT+'/api/user/create';
-    let payload = {};
+    let payload = {
+      facebook_id: facebook_id,
+      short_lived_token: short_lived_token,
+    };
     return fetch(url, {
       method: "POST",
       headers: {
@@ -4748,7 +4751,8 @@ var api = {
       body: querystring.stringify(payload)})
       .then(result =>{
         return result.json();
-      });
+      })
+      .then(result =>{return result.result;})
 
   },
 
