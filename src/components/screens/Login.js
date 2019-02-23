@@ -32,6 +32,8 @@ export default class Login extends React.Component {
                 .then(result => {
                   AsyncStorage.setItem("id", result.id);
                   AsyncStorage.setItem("token", result.token);
+                  global.userToken = result.token;
+                  global.userID = result.id;
                   this.props.navigation.navigate('ImageDisplayer');
                 })
 

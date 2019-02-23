@@ -4678,10 +4678,15 @@ let restaurantsTemp =     [
     }
   ]
 
-var api = {
-  async searchRestaurants (lat, lng){
+class api {
 
-/*    let query = {
+  constructor() {
+
+  }
+
+  async searchRestaurants (lat, lng){
+/*
+   let query = {
       lat: lat,
       lng: lng,
       minPrice: 0,
@@ -4692,10 +4697,18 @@ var api = {
     };
 
     let url = END_POINT+`/api/restaurant/search?${querystring.stringify(query)}`;
-    return fetch(url)
+    return fetch(url,{
+      method: "GET",
+      headers: {
+        'Accept': 'text/html,application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'picker.token': global.userToken
+      },
+    })
     .then(res => res.json())
     .then(responseJSON =>{
-      let restaurants = responseJSON.map(restaurant => {
+      //console.log(responseJSON);
+      let restaurants = responseJSON.restaurants.map(restaurant => {
         let photos = restaurant.photos.map(photo =>{
           var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
           let uri = {
@@ -4710,7 +4723,7 @@ var api = {
             height: 1000,
           };
         })
-        return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance});
+        return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: restaurant.temperature, busy_hours: restaurant.busy_hours});
       })
       return restaurants;
     })
@@ -4731,12 +4744,25 @@ var api = {
           height: 1000,
         };
       })
-      return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance});
+      return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: {"dsds":"dsds"}, busy_hours: restaurant.busy_hours});
     })
-    return restaurants;
-  },
+    let res1 = restaurants.slice(0);
+    let res2 = restaurants.slice(0);
+    let res3 = restaurants.slice(0);
+    let res4 = restaurants.slice(0);
+    let res5 = restaurants.slice(0);
+    let res6 = restaurants.slice(0);
+    let res7 = restaurants.concat(res1,res2,res3,res4,res5,res6);
+    return await new Promise(resolve => {
+      setTimeout(() =>{
+        resolve(res7);
+      }, 500);
+    });
 
-  async createUser(facebook_id, short_lived_token){
+
+  }
+
+  createUser(facebook_id, short_lived_token){
     let url = END_POINT+'/api/user/create';
     let payload = {
       facebook_id: facebook_id,
@@ -4752,11 +4778,14 @@ var api = {
       .then(result =>{
         return result.json();
       })
-      .then(result =>{return result.result;})
+      .then(result =>{
+        console.log(result);
+        return result.result;
+      })
 
-  },
+  }
 
-  async takeAction(lat, lng, userID, restaurantID, distance, action){
+  takeAction(lat, lng, userID, restaurantID, distance, temperature, busyness, action){
     //console.log(moment().format('ddd-MMM-D-YYYY,h-mm-ss-a'));
     let timeStamp = moment().format('ddd-MMM-D-YYYY,h-m-s-a').split(',');
     let url = END_POINT+'/api/connection/action';
@@ -4769,13 +4798,16 @@ var api = {
       date: timeStamp[0],
       time: timeStamp [1],
       distance: JSON.stringify(distance),
+      temperature: JSON.stringify(temperature),
+      busyness: this.getBusyness(busyness)
     };
-    console.log(querystring.stringify(payload));
+    //console.log(querystring.stringify(payload));
     return fetch(url, {
       method: "POST",
       headers: {
         'Accept': 'text/html',
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'picker.token': global.userToken
       },
       body: querystring.stringify(payload)})
       .then(result =>{
@@ -4783,7 +4815,44 @@ var api = {
       });
   }
 
+  //this method is just for testing purposes
+  logoutFacebook(userId, facebookToken){
+    let url = 'https://graph.facebook.com/'+userId+'/permissions?access_token='+facebookToken;
+    return fetch(url, {
+      method: "DELETE",
+      headers: {
+        'Accept': 'text/html,application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      })
+      .then(result =>{
+        console.log(result);
+      });
+  }
+
+  getBusyness(busyHours){
+    let busyness = 0;
+    if(busyHours === null){
+      return busyness;
+    }
+    let timeStamp = moment().format('ddd,h,a').split(',');
+    if(timeStamp[2] === 'pm'){
+      timeStamp[1] = (parseInt(timeStamp[1]) +12).toString();
+    }
+    busyHours.forEach(day => {
+        if(day.day === timeStamp[0]) {
+          day.hours.forEach(hour =>{
+            if(hour.hour === parseInt(timeStamp[1])){
+              busyness = hour.percentage
+            }
+          })
+        }
+    });
+
+    return busyness;
+  }
+
 };
 
 
-module.exports = api;
+module.exports = new api();

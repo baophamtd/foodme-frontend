@@ -1,5 +1,5 @@
 import React from 'react';
-import API from '../../utilities/api';
+//import API from '../../utilities/api';
 
 import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
@@ -7,7 +7,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import {LoginManager} from 'react-native-fbsdk';
 
 
-
+const API = require('../../utilities/api');
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -19,7 +19,6 @@ export default class ImageDisplayer extends React.Component{
     super()
 
     this.state = {
-      userID: '',
       currentRestaurantIndex: 0,
       currentImage: require('../../images/loading-icon.png'),
       currentRestaurantName: '',
@@ -28,27 +27,28 @@ export default class ImageDisplayer extends React.Component{
       currentRestaurantDistance: '',
       firstRestaurant: true,
       zoomingMode: false,
+      foundRestaurant: false,
       restaurants: []
     }
 
   }
   componentDidMount() {
 
-  /*
     navigator.geolocation.getCurrentPosition(position =>{
+      global.location = position.coords;
       API.searchRestaurants(position.coords.latitude, position.coords.longitude)
       .then((res) =>{
         this.setState({
           restaurants: res,
-          currentImage: {uri:res[0].photos[0]}
+          currentImage: {uri:res[0].photos[0]},
         })
-        //console.log(this.state.restaurants.length)
       })
     })
-  */
 
+/*
     setTimeout(function () {
       navigator.geolocation.getCurrentPosition(position =>{
+        global.location = position.coords;
         API.searchRestaurants(position.coords.latitude, position.coords.longitude)
         .then((res) =>{
           this.setState({
@@ -58,29 +58,12 @@ export default class ImageDisplayer extends React.Component{
         })
       })
     }.bind(this), 1000);
-
+*/
   }
 
   //show next restaurants
-  nextRestaurant(index, action){
-    navigator.geolocation.getCurrentPosition(position =>{
-      API.takeAction(position.coords.latitude, position.coords.longitude, this.state.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, action);
-    })
-  /*
-    const { restaurants, currentRestaurantIndex } = this.state;
-    this.setState({
-      currentRestaurantIndex: index + 1,
-      restaurants: [
-        ...restaurants.slice(0, currentRestaurantIndex + 1), // if not familiar with this look for spread operator
-        {
-          ...restaurants[currentRestaurantIndex + 1],
-          currentImageIndex: 0,
-        },
-        ...restaurants.slice(currentRestaurantIndex + 2, restaurants.length)
-      ],
-      firstRestaurant: false,
-    });
-  */
+  nextRestaurant(index){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance,this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "next");
     if(index < this.state.restaurants.length - 1){
       const { restaurants, currentRestaurantIndex } = this.state;
       this.setState({
@@ -99,6 +82,7 @@ export default class ImageDisplayer extends React.Component{
   }
 
   previousRestaurant(index){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"previous");
     const { restaurants, currentRestaurantIndex } = this.state;
     this.setState({
       currentRestaurantIndex: index - 1,
@@ -118,11 +102,19 @@ export default class ImageDisplayer extends React.Component{
     }
   }
 
+  likeRestaurant(){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"like");
+    this.refs.deck.swipeRight();
+  }
+
   renderHeader(){
 
   }
 
   switchToZoomView(show){
+    if(show){
+      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
+    }
     this.setState((state, props) => ({
       zoomingMode: show,
     }));
@@ -166,6 +158,7 @@ export default class ImageDisplayer extends React.Component{
           )
         }
       }
+      /*
       this.state.currentRestaurantName = this.state.restaurants[this.state.currentRestaurantIndex].name;
       this.state.currentRestaurantPrice = '';
       if(this.state.restaurants[this.state.currentRestaurantIndex].price == 0){
@@ -176,7 +169,10 @@ export default class ImageDisplayer extends React.Component{
         }
       }
 
-      this.state.currentRestaurantDistance =  this.state.restaurants[this.state.currentRestaurantIndex].distance.duration.text;
+      if(!this.state.restaurants[this.state.currentRestaurantIndex].distance.duration.text){
+        console.log(this.state.restaurants[this.state.currentRestaurantIndex])
+      }
+      this.state.currentRestaurantDistance =  this.state.restaurants[this.state.currentRestaurantIndex].distance.duration.text;*/
 
       return (
         <View style = {styles.imageIndexContainer}>
@@ -187,34 +183,74 @@ export default class ImageDisplayer extends React.Component{
     }
   }
 
+  renderFoundRestaurantModal(){
+    return (
+      <Modal
+        visible={this.state.foundRestaurant}>
+      </Modal>
+    )
+  }
+
   renderTexts(cardIndex){
     const { restaurants } = this.state;
     return (
       <View style={styles.textContainer}>
-        <View style={{flex:4, marginLeft:5}}>
-          <Text style={{
-            fontSize: 20,
-            backgroundColor: 'transparent',
-            fontWeight: 'bold',
-            color: 'white',
-            marginBottom:5,
-            //fontFamily: "Gotham Rounded",
-          }}>{restaurants[cardIndex].name}</Text>
-          <Text style={{
-            fontWeight: 'bold',
-            color: 'white',
-            fontSize:17}}>{restaurants[cardIndex].distance.duration.text}</Text>
+        <View style={{flex:2, flexDirection: "row"}}>
+          <View style={{flex:4, marginLeft:5}}>
+            <Text style={{
+              fontSize: 20,
+              backgroundColor: 'transparent',
+              fontWeight: 'bold',
+              color: 'white',
+              marginBottom:5,
+              //fontFamily: "Gotham Rounded",
+            }}>{restaurants[cardIndex].name}</Text>
+          </View>
+          <View style={{flex:1}}>
+            {this.renderPrice(restaurants[cardIndex].price)}
+          </View>
         </View>
-        <View style={{flex:1}}>
-          {this.renderPrice(restaurants[cardIndex].price)}
+        <View style={{flex:1, marginLeft:5}}>
+          {this.renderDistanceAndBusyness(cardIndex)}
         </View>
       </View>
     )
   }
 
+  renderDistanceAndBusyness(cardIndex){
+    const { restaurants } = this.state;
+    let distance, busyness = "";
+    if(restaurants[cardIndex].distance.duration !== undefined){
+      distance = restaurants[cardIndex].distance.duration.text;
+    }
+    if(restaurants[cardIndex].busy_hours && restaurants[cardIndex].busy_hours !== null){
+      let busynessPercentage = API.getBusyness(restaurants[cardIndex].busy_hours);
+      if(busynessPercentage < 40){
+        busyness =  "Not Busy Now";
+      }else if(busynessPercentage < 70 && busynessPercentage >=40){
+        busyness = "Busy Now";
+      }else {
+        busyness = "Very Busy Now";
+      }
+    }
+    return (
+      <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+      <Text style={{
+      fontWeight: 'bold',
+      color: 'white',
+      fontSize:15}}>{distance}</Text>
+      <Text style={{
+        position: 'absolute', right:0,
+        fontWeight: 'bold',
+        color: 'white',
+        fontSize:15,
+        marginRight:5}}>{busyness}</Text>
+      </View>)
+  }
+
   renderPrice(price){
-    let priceString = '';
-    for(let i = 0; i< price; i++) {
+    let priceString = "$";
+    for(let i = 1; i< price; i++) {
       priceString = priceString + '$';
     }
     return (
@@ -233,7 +269,7 @@ export default class ImageDisplayer extends React.Component{
     return (
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.buttonController}
-          onPress = {()=>{this.refs.deck.swipeLeft()}}>
+          onPress = {()=>{if(!this.state.firstRestaurant)this.refs.deck.swipeLeft()}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('../../images/previous-icon2.png')}
@@ -241,7 +277,7 @@ export default class ImageDisplayer extends React.Component{
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonMain}
-        onPress = {()=>{}}>
+        onPress = {()=>{this.likeRestaurant()}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('../../images/heart-icon2.png')}
@@ -315,6 +351,7 @@ export default class ImageDisplayer extends React.Component{
   }
 
   nextImage(){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature, this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
     const { restaurants, currentRestaurantIndex } = this.state;
     if(restaurants[currentRestaurantIndex].currentImageIndex < 9){
       this.setState({
@@ -331,6 +368,7 @@ export default class ImageDisplayer extends React.Component{
   }
 
   previousImage(){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature, this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
     const { restaurants, currentRestaurantIndex } = this.state;
     if(restaurants[currentRestaurantIndex].currentImageIndex > 0){
       this.setState({
@@ -349,50 +387,51 @@ export default class ImageDisplayer extends React.Component{
 
   render() {
     if(this.state.restaurants.length === 0) return null;
-
-    return (
-      <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
-        <View style={{ flex: 1 ,backgroundColor: 'blue', justifyContent: 'center',}}>
-          <Button title = "Remove token" onPress = {() => {
-            this.props.navigation.navigate("Login");
-            AsyncStorage.removeItem("token");
-            LoginManager.logOut();
-          }
-        }/>
+      return (
+        <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
+          <View style={{ flex: 1 ,backgroundColor: 'blue', justifyContent: 'center',}}>
+            <Button title = "Remove token" onPress = {() => {
+              this.props.navigation.navigate("Login");
+              let id = AsyncStorage.getItem("id");
+              let token = AsyncStorage.getItem("token");
+              return Promise.all([id, token])
+              .then(results =>{
+                API.logoutFacebook(results[0],results[1]);
+              });
+              AsyncStorage.removeItem("token");
+              AsyncStorage.removeItem("id");
+              LoginManager.logOut();
+            }
+          }/>
+          </View>
+          <View style={{ flex: 8 , backgroundColor: 'red'}}>
+            <Swiper
+                  ref = "deck"
+                  cards={this.state.restaurants}
+                  renderCard={(card, cardIndex) =>{
+                    return this.renderCard(card, cardIndex);
+                  }}
+                  onSwipedLeft={(cardIndex) => {
+                    this.previousRestaurant(cardIndex);
+                  }}
+                  onSwipedRight={(cardIndex) => {
+                    this.nextRestaurant(cardIndex);
+                  }}
+                  onSwipedAll={() => {console.log('onSwipedAll')}}
+                  onTapCard={() =>{}}
+                  cardIndex={this.state.currentRestaurantIndex}
+                  backgroundColor={'#efede6'}
+                  showSecondCard = {true}
+                  stackSize= {this.state.restaurants.length}
+                  disableLeftSwipe = {this.state.firstRestaurant}
+                  disableBottomSwipe = {true}
+                  goBackToPreviousCardOnSwipeLeft = {true}
+                  stackSeparation = {1}>
+                </Swiper>{this.updateZoomView()}</View>
+          {this.renderButtons()}
         </View>
-        <View style={{ flex: 8 , backgroundColor: 'red'}}>
-          <Swiper
-              ref="deck"
-              cards={this.state.restaurants}
-              renderCard={(card, cardIndex) =>{
-                return this.renderCard(card, cardIndex);
-              }}
-              onSwipedLeft={(cardIndex) => {
-                this.previousRestaurant(cardIndex);
-              }}
-              onSwipedRight={(cardIndex) => {
-                this.nextRestaurant(cardIndex);
-              }}
-              onSwipedAll={() => {console.log('onSwipedAll')}}
-              onTapCard={() =>{}}
-              cardIndex={this.state.currentRestaurantIndex}
-              backgroundColor={'#efede6'}
-              showSecondCard = {true}
-              stackSize= {this.state.restaurants.length}
-              disableLeftSwipe = {this.state.firstRestaurant}
-              disableBottomSwipe = {true}
-              goBackToPreviousCardOnSwipeLeft = {true}
-              stackSeparation = {1}
-              >
-            </Swiper>
-            {this.updateZoomView()}
-        </View>
-        {this.renderButtons()}
 
-      </View>
-      //<ImageDisplayer/>
-
-    );
+      );
 
   }
 
@@ -516,9 +555,9 @@ const styles = StyleSheet.create({
     //backgroundColor: 'blue',
   },
   textContainer:{
-    flex:0.2,
+    flex:0.15,
     //backgroundColor: 'red',
-    flexDirection: 'row',
+    flexDirection: 'column',
     marginBottom: 10
   },
 });
