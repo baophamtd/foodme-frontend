@@ -46,6 +46,8 @@ export const isSignedIn = () => {
     .then(results =>{
       if(results[0] && results[1]){
         return true;
-      }else return false;
+      }else {
+        return false;
+      }
     })
 };

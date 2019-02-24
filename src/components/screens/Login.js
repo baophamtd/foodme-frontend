@@ -27,7 +27,7 @@ export default class Login extends React.Component {
              } else {
                AccessToken.getCurrentAccessToken()
                 .then((data) => {
-                     return API.createUser(data.userID,data.accessToken);
+                  return API.createUser(data.userID,data.accessToken);
                 })
                 .then(result => {
                   AsyncStorage.setItem("id", result.id);

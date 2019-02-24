@@ -2,7 +2,7 @@ const querystring = require('querystring');
 const moment = require('moment');
 const Restaurant = require('./restaurant.object');
 const WEATHER_API_KEY = 'a3a61defc8d1a149a9276e19249fd38d';
-const END_POINT = 'http://localhost:3000';
+const END_POINT = 'http://52.53.213.165:3000';
 
 let restaurantsTemp =     [
   {
@@ -4685,7 +4685,7 @@ class api {
   }
 
   async searchRestaurants (lat, lng){
-/*
+
    let query = {
       lat: lat,
       lng: lng,
@@ -4723,12 +4723,12 @@ class api {
             height: 1000,
           };
         })
-        return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: restaurant.temperature, busy_hours: restaurant.busy_hours});
+        return new Restaurant({name:restaurant.name, address: restaurant.address, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: restaurant.temperature, busy_hours: restaurant.busy_hours});
       })
       return restaurants;
     })
-*/
 
+/*
     let restaurants = restaurantsTemp.map(restaurant => {
       let photos = restaurant.photos.map(photo =>{
         var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
@@ -4744,8 +4744,9 @@ class api {
           height: 1000,
         };
       })
-      return new Restaurant({name:restaurant.name, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: {"dsds":"dsds"}, busy_hours: restaurant.busy_hours});
+      return new Restaurant({name:restaurant.name, address: restaurant.address, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: {"dsds":"dsds"}, busy_hours: restaurant.busy_hours});
     })
+
     let res1 = restaurants.slice(0);
     let res2 = restaurants.slice(0);
     let res3 = restaurants.slice(0);
@@ -4755,10 +4756,10 @@ class api {
     let res7 = restaurants.concat(res1,res2,res3,res4,res5,res6);
     return await new Promise(resolve => {
       setTimeout(() =>{
-        resolve(res7);
+        resolve(restaurants);
       }, 500);
     });
-
+*/
 
   }
 

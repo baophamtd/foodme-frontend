@@ -102,6 +102,12 @@ export default class ImageDisplayer extends React.Component{
     }
   }
 
+  navigateToRestaurant(){
+    this.setState({
+      foundRestaurant: true
+    })
+  }
+
   likeRestaurant(){
     API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"like");
     this.refs.deck.swipeRight();
@@ -183,10 +189,47 @@ export default class ImageDisplayer extends React.Component{
     }
   }
 
-  renderFoundRestaurantModal(){
+  renderFoundRestaurantModal(cardIndex){
+    if(this.state.foundRestaurant){
+      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "navigate");
+    }
+    const { restaurants } = this.state;
     return (
       <Modal
-        visible={this.state.foundRestaurant}>
+        animationType = {'slide'}
+        transparent={true}
+        visible={this.state.foundRestaurant}
+       >
+        <View style={{
+                marginTop:SCREEN_HEIGHT * 0.25,
+                justifyContent: 'center',
+                alignItems: 'center'}}>
+                <View style={{
+                  backgroundColor:'white',
+                  marginLeft: 20,
+                  marginRight: 20,
+                  alignSelf: 'flex-start',
+                  borderRadius:10,
+                }}
+                >
+                  <Text style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  fontSize:15,}}>Okurrrt! We have found the restaurant for you.</Text>
+                  <Text style={{
+                  fontWeight: 'bold',
+                  color: 'green',
+                  fontSize:20,}}>{restaurants[cardIndex].name}</Text>
+                  <Text style={{
+                  fontWeight: 'bold',
+                  color: 'green',
+                  fontSize:17,}}>{restaurants[cardIndex].address}</Text>
+                  <Text style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  fontSize:15,}}>Sadly, the app has terminated itself ;( Please reset to use.</Text>
+                </View>
+        </View>
       </Modal>
     )
   }
@@ -284,7 +327,8 @@ export default class ImageDisplayer extends React.Component{
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonMain}>
+        <TouchableOpacity style={styles.buttonMain}
+        onPress = {()=>{this.navigateToRestaurant()}}>
           <Image
             style = {styles.buttonIcon}
             source = {require('../../images/car-icon2.png')}
@@ -427,7 +471,11 @@ export default class ImageDisplayer extends React.Component{
                   disableBottomSwipe = {true}
                   goBackToPreviousCardOnSwipeLeft = {true}
                   stackSeparation = {1}>
-                </Swiper>{this.updateZoomView()}</View>
+                </Swiper>
+                {this.updateZoomView()}
+                {this.renderFoundRestaurantModal(this.state.currentRestaurantIndex)}
+
+          </View>
           {this.renderButtons()}
         </View>
 
@@ -560,4 +608,5 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginBottom: 10
   },
+
 });
