@@ -10,7 +10,6 @@ import {LoginManager} from 'react-native-fbsdk';
 const API = require('../../utilities/api');
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
-import Icon from 'react-native-vector-icons/Ionicons'
 
 
 export default class ImageDisplayer extends React.Component{
@@ -44,21 +43,6 @@ export default class ImageDisplayer extends React.Component{
         })
       })
     })
-
-/*
-    setTimeout(function () {
-      navigator.geolocation.getCurrentPosition(position =>{
-        global.location = position.coords;
-        API.searchRestaurants(position.coords.latitude, position.coords.longitude)
-        .then((res) =>{
-          this.setState({
-            restaurants: res,
-            currentImage: {uri:res[0].photos[0]},
-          })
-        })
-      })
-    }.bind(this), 1000);
-*/
   }
 
   //show next restaurants
@@ -132,6 +116,7 @@ export default class ImageDisplayer extends React.Component{
             <Modal
               visible={this.state.zoomingMode}
               transparent={true}
+              onRequestClose={()=>{}}
               >
                 <ImageViewer
                 imageUrls={this.state.restaurants[this.state.currentRestaurantIndex].photos}
@@ -196,6 +181,7 @@ export default class ImageDisplayer extends React.Component{
     const { restaurants } = this.state;
     return (
       <Modal
+        onRequestClose={()=>{}}
         animationType = {'slide'}
         transparent={true}
         visible={this.state.foundRestaurant}
@@ -434,7 +420,7 @@ export default class ImageDisplayer extends React.Component{
       return (
         <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
           <View style={{ flex: 1 ,backgroundColor: 'blue', justifyContent: 'center',}}>
-            <Button title = "Remove token" onPress = {() => {
+            {/*<Button title = "Remove token" onPress = {() => {
               this.props.navigation.navigate("Login");
               let id = AsyncStorage.getItem("id");
               let token = AsyncStorage.getItem("token");
@@ -446,7 +432,7 @@ export default class ImageDisplayer extends React.Component{
               AsyncStorage.removeItem("id");
               LoginManager.logOut();
             }
-          }/>
+          }/>*/}
           </View>
           <View style={{ flex: 8 , backgroundColor: 'red'}}>
             <Swiper
@@ -504,6 +490,7 @@ const styles = StyleSheet.create({
     marginTop: -50,
     marginLeft: -10,
     marginRight: -10,
+    marginBottom: 25,
   },
   nextPreviousText:{
     borderWidth: 1,
@@ -521,8 +508,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginLeft: 10,
     marginRight: 10,
-    //marginTop: 50,
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 20,
   },
   buttonMain:{
     borderRadius: 100,

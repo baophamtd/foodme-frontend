@@ -4691,7 +4691,7 @@ class api {
       lng: lng,
       minPrice: 0,
       maxPrice: 3,
-      radiusMiles: 5,
+      radiusMiles: 8,
       maxWidth: 1000,
       maxHeight: 1000,
     };

@@ -25,6 +25,9 @@ export default class App extends React.Component {
     isSignedIn()
           .then(res => this.setState({ loggedIn: res }))
           .catch(err => alert("An error occurred"));
+    navigator.geolocation.getCurrentPosition(position =>{
+          global.location = position.coords;
+    })
   }
 
   render() {
