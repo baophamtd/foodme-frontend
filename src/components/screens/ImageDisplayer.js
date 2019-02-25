@@ -66,7 +66,6 @@ export default class ImageDisplayer extends React.Component{
   }
 
   previousRestaurant(index){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"previous");
     const { restaurants, currentRestaurantIndex } = this.state;
     this.setState({
       currentRestaurantIndex: index - 1,
@@ -84,6 +83,7 @@ export default class ImageDisplayer extends React.Component{
         firstRestaurant: true,
       }));
     }
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"previous");
   }
 
   navigateToRestaurant(){

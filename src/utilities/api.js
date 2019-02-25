@@ -4833,7 +4833,7 @@ class api {
 
   getBusyness(busyHours){
     let busyness = 0;
-    if(busyHours === null){
+    if(busyHours === null || busyHours === undefined){
       return busyness;
     }
     let timeStamp = moment().format('ddd,h,a').split(',');
