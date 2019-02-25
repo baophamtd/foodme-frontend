@@ -4756,7 +4756,7 @@ class api {
     let res7 = restaurants.concat(res1,res2,res3,res4,res5,res6);
     return await new Promise(resolve => {
       setTimeout(() =>{
-        resolve(restaurants);
+        resolve(res7);
       }, 500);
     });
 */

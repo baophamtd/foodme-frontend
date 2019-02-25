@@ -27,7 +27,7 @@ export default class ImageDisplayer extends React.Component{
       firstRestaurant: true,
       zoomingMode: false,
       foundRestaurant: false,
-      restaurants: []
+      restaurants: [],
     }
 
   }
@@ -51,7 +51,7 @@ export default class ImageDisplayer extends React.Component{
     if(index < this.state.restaurants.length - 1){
       const { restaurants, currentRestaurantIndex } = this.state;
       this.setState({
-        currentRestaurantIndex: index + 1,
+        currentRestaurantIndex: index+ 1,
         restaurants: [
           ...restaurants.slice(0, currentRestaurantIndex + 1), // if not familiar with this look for spread operator
           {
@@ -452,7 +452,7 @@ export default class ImageDisplayer extends React.Component{
                   cardIndex={this.state.currentRestaurantIndex}
                   backgroundColor={'#efede6'}
                   showSecondCard = {true}
-                  stackSize= {this.state.restaurants.length}
+                  stackSize= {2}
                   disableLeftSwipe = {this.state.firstRestaurant}
                   disableBottomSwipe = {true}
                   goBackToPreviousCardOnSwipeLeft = {true}
