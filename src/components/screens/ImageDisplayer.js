@@ -47,7 +47,6 @@ export default class ImageDisplayer extends React.Component{
 
   //show next restaurants
   nextRestaurant(index){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance,this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "next");
     if(index < this.state.restaurants.length - 1){
       const { restaurants, currentRestaurantIndex } = this.state;
       this.setState({
@@ -78,12 +77,12 @@ export default class ImageDisplayer extends React.Component{
         ...restaurants.slice(currentRestaurantIndex, restaurants.length)
       ],
     });
+
     if(index == 1){
       this.setState((state, props) => ({
         firstRestaurant: true,
       }));
     }
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"previous");
   }
 
   navigateToRestaurant(){
@@ -92,9 +91,19 @@ export default class ImageDisplayer extends React.Component{
     })
   }
 
-  likeRestaurant(){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,"like");
-    this.refs.deck.swipeRight();
+  okRestaurant(cardIndex){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance,this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, 1);
+    this.nextRestaurant(cardIndex);
+  }
+
+  likeRestaurant(cardIndex){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,2);
+    this.nextRestaurant(cardIndex);
+  }
+
+  dislikeRestaurant(cardIndex){
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,0);
+    this.nextRestaurant(cardIndex);
   }
 
   renderHeader(){
@@ -103,7 +112,7 @@ export default class ImageDisplayer extends React.Component{
 
   switchToZoomView(show){
     if(show){
-      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
+      //API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
     }
     this.setState((state, props) => ({
       zoomingMode: show,
@@ -176,7 +185,7 @@ export default class ImageDisplayer extends React.Component{
 
   renderFoundRestaurantModal(cardIndex){
     if(this.state.foundRestaurant){
-      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "navigate");
+      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, 3);
     }
     const { restaurants } = this.state;
     return (
@@ -297,23 +306,39 @@ export default class ImageDisplayer extends React.Component{
   renderButtons(){
     return (
       <View style={styles.buttonContainer}>
+      <TouchableOpacity style={styles.buttonController}
+        onPress = {()=>{if(!this.state.firstRestaurant)this.previousRestaurant(this.state.currentRestaurantIndex)}}>
+        <Image
+          style = {styles.buttonIcon}
+          source = {require('../../images/rewind-icon2.png')}
+          //resizeMode = 'contain'
+        />
+      </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonMain}
+          onPress = {()=>{this.refs.deck.swipeLeft()}}>
+          <Image
+            style = {styles.buttonIcon}
+            source = {require('../../images/thumbs-down-icon.png')}
+            //resizeMode = 'contain'
+          />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.buttonController}
-          onPress = {()=>{if(!this.state.firstRestaurant)this.refs.deck.swipeLeft()}}>
+        onPress = {()=>{this.refs.deck.swipeTop()}}>
           <Image
             style = {styles.buttonIcon}
-            source = {require('../../images/previous-icon2.png')}
+            source = {require('../../images/thumbs-up-icon.png')}
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonMain}
-        onPress = {()=>{this.likeRestaurant()}}>
+          onPress = {()=>{this.refs.deck.swipeRight()}}>
           <Image
             style = {styles.buttonIcon}
-            source = {require('../../images/heart-icon2.png')}
+            source = {require('../../images/ok-hand-icon.png')}
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonMain}
+        <TouchableOpacity style={styles.buttonController}
         onPress = {()=>{this.navigateToRestaurant()}}>
           <Image
             style = {styles.buttonIcon}
@@ -321,14 +346,7 @@ export default class ImageDisplayer extends React.Component{
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonController}
-          onPress = {()=>{this.refs.deck.swipeRight()}}>
-          <Image
-            style = {styles.buttonIcon}
-            source = {require('../../images/next-icon2.png')}
-            //resizeMode = 'contain'
-          />
-        </TouchableOpacity>
+
       </View>
     )
   }
@@ -381,7 +399,6 @@ export default class ImageDisplayer extends React.Component{
   }
 
   nextImage(){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature, this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
     const { restaurants, currentRestaurantIndex } = this.state;
     if(restaurants[currentRestaurantIndex].currentImageIndex < 9){
       this.setState({
@@ -398,7 +415,6 @@ export default class ImageDisplayer extends React.Component{
   }
 
   previousImage(){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature, this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, "view");
     const { restaurants, currentRestaurantIndex } = this.state;
     if(restaurants[currentRestaurantIndex].currentImageIndex > 0){
       this.setState({
@@ -442,10 +458,13 @@ export default class ImageDisplayer extends React.Component{
                     return this.renderCard(card, cardIndex);
                   }}
                   onSwipedLeft={(cardIndex) => {
-                    this.previousRestaurant(cardIndex);
+                    this.dislikeRestaurant(cardIndex);
                   }}
                   onSwipedRight={(cardIndex) => {
-                    this.nextRestaurant(cardIndex);
+                    this.okRestaurant(cardIndex);
+                  }}
+                  onSwipedTop={(cardIndex) => {
+                    this.likeRestaurant(cardIndex);
                   }}
                   onSwipedAll={() => {console.log('onSwipedAll')}}
                   onTapCard={() =>{}}
@@ -453,9 +472,8 @@ export default class ImageDisplayer extends React.Component{
                   backgroundColor={'#efede6'}
                   showSecondCard = {true}
                   stackSize= {2}
-                  disableLeftSwipe = {this.state.firstRestaurant}
-                  disableBottomSwipe = {true}
-                  goBackToPreviousCardOnSwipeLeft = {true}
+                  disableBottomSwipe={true}
+                  goBackToPreviousCardOnSwipeLeft = {false}
                   stackSeparation = {1}>
                 </Swiper>
                 {this.updateZoomView()}
@@ -515,15 +533,15 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     flex:1,
     //alignSelf: 'stretch',
-    marginLeft:15,
-    marginRight:15,
+    marginLeft:10,
+    marginRight:10,
     aspectRatio:1
   },
   buttonController:{
     borderRadius: 100,
     flex:0.8,
-    marginLeft:15,
-    marginRight:15,
+    marginLeft:10,
+    marginRight:10,
     marginTop:5,
     //marginBottom:10,
     aspectRatio:1
