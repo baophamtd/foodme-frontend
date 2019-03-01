@@ -47,8 +47,8 @@ export default class ImageDisplayer extends React.Component{
 
   //show next restaurants
   nextRestaurant(index){
+    const { restaurants, currentRestaurantIndex } = this.state;
     if(index < this.state.restaurants.length - 1){
-      const { restaurants, currentRestaurantIndex } = this.state;
       this.setState({
         currentRestaurantIndex: index+ 1,
         restaurants: [
@@ -61,6 +61,17 @@ export default class ImageDisplayer extends React.Component{
         ],
         firstRestaurant: false,
       });
+    }
+
+    if(currentRestaurantIndex == restaurants.length - 7){
+      navigator.geolocation.getCurrentPosition(position =>{
+        API.getNextPage(position.coords.latitude, position.coords.longitude)
+        .then((res) =>{
+          this.setState({
+            restaurants: [...restaurants, ... res],
+          })
+        })
+      })
     }
   }
 
@@ -314,27 +325,27 @@ export default class ImageDisplayer extends React.Component{
           //resizeMode = 'contain'
         />
       </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonMain}
+        <TouchableOpacity style={styles.buttonController}
           onPress = {()=>{this.refs.deck.swipeLeft()}}>
           <Image
             style = {styles.buttonIcon}
-            source = {require('../../images/thumbs-down-icon.png')}
+            source = {require('../../images/sad-icon2.png')}
+            //resizeMode = 'contain'
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonMain}
+        onPress = {()=>{this.refs.deck.swipeTop()}}>
+          <Image
+            style = {styles.buttonIcon}
+            source = {require('../../images/happy-icon2.png')}
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonController}
-        onPress = {()=>{this.refs.deck.swipeTop()}}>
-          <Image
-            style = {styles.buttonIcon}
-            source = {require('../../images/thumbs-up-icon.png')}
-            //resizeMode = 'contain'
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonMain}
           onPress = {()=>{this.refs.deck.swipeRight()}}>
           <Image
             style = {styles.buttonIcon}
-            source = {require('../../images/ok-hand-icon.png')}
+            source = {require('../../images/meh-icon2.png')}
             //resizeMode = 'contain'
           />
         </TouchableOpacity>
@@ -453,6 +464,7 @@ export default class ImageDisplayer extends React.Component{
           <View style={{ flex: 8 , backgroundColor: 'red'}}>
             <Swiper
                   ref = "deck"
+                  infinite
                   cards={this.state.restaurants}
                   renderCard={(card, cardIndex) =>{
                     return this.renderCard(card, cardIndex);

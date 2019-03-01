@@ -2,7 +2,7 @@ const querystring = require('querystring');
 const moment = require('moment');
 const Restaurant = require('./restaurant.object');
 const WEATHER_API_KEY = 'a3a61defc8d1a149a9276e19249fd38d';
-const END_POINT = 'http://52.53.213.165:3000';
+const END_POINT = 'http://localhost:3000';
 
 let restaurantsTemp =     [
   {
@@ -4686,6 +4686,7 @@ class api {
 
   async searchRestaurants (lat, lng){
 
+/*
    let query = {
       lat: lat,
       lng: lng,
@@ -4697,6 +4698,7 @@ class api {
     };
 
     let url = END_POINT+`/api/restaurant/search?${querystring.stringify(query)}`;
+
     return fetch(url,{
       method: "GET",
       headers: {
@@ -4708,6 +4710,15 @@ class api {
     .then(res => res.json())
     .then(responseJSON =>{
       //console.log(responseJSON);
+      if(responseJSON.pagetoken) {
+        global.pagetoken = responseJSON.pagetoken;
+        //console.log(global.pagetoken);
+      }else global.pagetoken = undefined;
+      if(responseJSON.offset) {
+        global.offset = responseJSON.offset;
+        //console.log(global.offset);
+      }else global.offset = undefined;
+
       let restaurants = responseJSON.restaurants.map(restaurant => {
         let photos = restaurant.photos.map(photo =>{
           var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
@@ -4727,8 +4738,8 @@ class api {
       })
       return restaurants;
     })
+*/
 
-/*
     let restaurants = restaurantsTemp.map(restaurant => {
       let photos = restaurant.photos.map(photo =>{
         var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
@@ -4759,8 +4770,68 @@ class api {
         resolve(res7);
       }, 500);
     });
-*/
 
+  }
+
+  getNextPage(lat, lng){
+    if (global.pagetoken && global.offset){
+      //console.log(global.pagetoken, global.offset);
+    }else{
+      return [];
+    }
+    let query = {
+       lat: lat,
+       lng: lng,
+       minPrice: 0,
+       maxPrice: 3,
+       radiusMiles: 8,
+       maxWidth: 1000,
+       maxHeight: 1000,
+       pagetoken: global.pagetoken,
+       offset: global.offset
+     };
+
+     let url = END_POINT+`/api/restaurant/loadnextpage?${querystring.stringify(query)}`;
+     console.log(url);
+     return fetch(url,{
+       method: "GET",
+       headers: {
+         'Accept': 'text/html,application/json',
+         'Content-Type': 'application/x-www-form-urlencoded',
+         'picker.token': global.userToken
+       },
+     })
+     .then(res => res.json())
+     .then(responseJSON =>{
+       console.log(responseJSON);
+       if(responseJSON.pagetoken) {
+         global.pagetoken = responseJSON.pagetoken;
+         //console.log(global.pagetoken);
+       }else global.pagetoken = undefined;
+       if(responseJSON.offset) {
+         global.offset = responseJSON.offset;
+         //console.log(global.offset);
+       }else global.offset = undefined;
+
+       let restaurants = responseJSON.restaurants.map(restaurant => {
+         let photos = restaurant.photos.map(photo =>{
+           var endPoint = 'https://maps.googleapis.com/maps/api/place/photo?';
+           let uri = {
+                 key: 'AIzaSyDMMHtsOh6B3rBgqu9Q1ZqsHntJfYiQ8NA',
+                 maxwidth: 1000,
+                 maxheight: 1000,
+                 photo_reference: photo.photo_reference
+           };
+           return {
+             url:`${endPoint}${querystring.stringify(uri)}`,
+             width: 1000,
+             height: 1000,
+           };
+         })
+         return new Restaurant({name:restaurant.name, address: restaurant.address, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: restaurant.temperature, busy_hours: restaurant.busy_hours});
+       })
+       return restaurants;
+     })
   }
 
   createUser(facebook_id, short_lived_token){
