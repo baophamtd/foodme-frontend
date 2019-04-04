@@ -103,17 +103,17 @@ export default class ImageDisplayer extends React.Component{
   }
 
   okRestaurant(cardIndex){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance,this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, 1);
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex], 1);
     this.nextRestaurant(cardIndex);
   }
 
   likeRestaurant(cardIndex){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,2);
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex],2);
     this.nextRestaurant(cardIndex);
   }
 
   dislikeRestaurant(cardIndex){
-    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours,0);
+    API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex],0);
     this.nextRestaurant(cardIndex);
   }
 
@@ -196,7 +196,7 @@ export default class ImageDisplayer extends React.Component{
 
   renderFoundRestaurantModal(cardIndex){
     if(this.state.foundRestaurant){
-      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex].id, this.state.restaurants[this.state.currentRestaurantIndex].distance, this.state.restaurants[this.state.currentRestaurantIndex].temperature,this.state.restaurants[this.state.currentRestaurantIndex].busy_hours, 3);
+      API.takeAction(global.location.latitude, global.location.longitude, global.userID, this.state.restaurants[this.state.currentRestaurantIndex], 3);
     }
     const { restaurants } = this.state;
     return (
@@ -460,6 +460,7 @@ export default class ImageDisplayer extends React.Component{
               LoginManager.logOut();
             }
           }/>*/}
+            
           </View>
           <View style={{ flex: 8 , backgroundColor: 'red'}}>
             <Swiper
