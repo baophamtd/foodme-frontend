@@ -26,6 +26,7 @@ export const isSignedIn = () => {
     .then(res =>{
       if (res !== null) {
         global.userToken = res;
+        console.log(res);
         return true;
       } else {
         return false;

@@ -1,7 +1,7 @@
 import React from 'react';
 //import API from '../../utilities/api';
 
-import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, Button } from 'react-native';
+import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, TouchableHighlight, Button } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import {LoginManager} from 'react-native-fbsdk';
@@ -447,20 +447,34 @@ export default class ImageDisplayer extends React.Component{
       return (
         <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
           <View style={{ flex: 1 ,backgroundColor: 'blue', justifyContent: 'center',}}>
-            {/*<Button title = "Remove token" onPress = {() => {
-              this.props.navigation.navigate("Login");
-              let id = AsyncStorage.getItem("id");
-              let token = AsyncStorage.getItem("token");
-              return Promise.all([id, token])
-              .then(results =>{
-                API.logoutFacebook(results[0],results[1]);
-              });
-              AsyncStorage.removeItem("token");
-              AsyncStorage.removeItem("id");
-              LoginManager.logOut();
-            }
-          }/>*/}
-            
+            <View style={{ width: '45%',
+            height: '30%',
+            backgroundColor: 'white',
+            alignSelf: 'center',
+            marginTop: 20,
+            justifyContent: 'center',
+            borderRadius: 5,
+            }}>
+              <View style={{ flex: 1,
+              backgroundColor: 'orange',
+              marginTop: 1,
+              marginBottom: 1,
+              marginLeft: 1,
+              marginRight: 1,
+              borderRadius: 5,
+              flexDirection: 'row'
+              }}>
+              <TouchableOpacity
+                style = {{flex: 1, backgroundColor: 'orange', borderTopLeftRadius: 5, borderBottomLeftRadius: 5}}>
+                <Image style = {{flex: 1, resizeMode: 'contain', alignSelf: "center",}} source={require('../../images/man-user-only.png')} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style = {{flex: 1, backgroundColor: 'orange', borderTopRightRadius: 5, borderBottomRightRadius: 5}}
+                onPress = {() =>{this.props.navigation.navigate('AddingFriends');}}>
+                <Image style = {{flex: 1, resizeMode: 'contain', alignSelf: "center",}} source={require('../../images/multiple-users-only.png')} />
+              </TouchableOpacity>
+              </View>
+            </View>
           </View>
           <View style={{ flex: 8 , backgroundColor: 'red'}}>
             <Swiper

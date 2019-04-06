@@ -18,6 +18,7 @@ export default class Login extends React.Component {
    return (
      <View style = {styles.container}>
        <LoginButton
+         //readPermissions={["email","user_birthday","user_gender","user_hometown","user_age_range","public_profile","user_friends"]}
          onLoginFinished={
            (error, result) => {
              if (error) {

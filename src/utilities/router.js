@@ -5,6 +5,7 @@ import { FontAwesome } from "react-native-vector-icons";
 
 import Login from "../components/screens/Login";
 import ImageDisplayer from "../components/screens/ImageDisplayer";
+import AddingFriends from "../components/screens/AddingFriends";
 import TestScreen from "../components/screens/TestScreen";
 
 
@@ -18,6 +19,15 @@ export const imageDisplayerNavigator = createStackNavigator({
       TestScreen: TestScreen,
     });
 
+export const addingFriendsNavigator = createStackNavigator({
+      AddingFriends: {
+        screen: AddingFriends,
+        navigationOptions: {
+          header: null
+        }
+      }
+    });
+
 
 export const createRootNavigator = (loggedIn = false) => {
   return createSwitchNavigator(
@@ -26,6 +36,7 @@ export const createRootNavigator = (loggedIn = false) => {
         screen: Login,
       },
       ImageDisplayer: imageDisplayerNavigator,
+      AddingFriends: addingFriendsNavigator,
     },
     {
       initialRouteName: loggedIn ? "ImageDisplayer" : "Login"
