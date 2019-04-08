@@ -2,7 +2,7 @@ const querystring = require('querystring');
 const moment = require('moment');
 const Restaurant = require('./restaurant.object');
 const WEATHER_API_KEY = 'a3a61defc8d1a149a9276e19249fd38d';
-const END_POINT = 'http://localhost:3000';
+const END_POINT = 'http://52.53.213.165:3000';
 
 let restaurantsTemp =   [
         {
@@ -19058,15 +19058,7 @@ class api {
       })
       return new Restaurant({name:restaurant.name, address: restaurant.address, id: restaurant.place_id, photos:photos, price: restaurant.price, distance: restaurant.distance, temperature: {"dsds":"dsds"}, busy_hours: restaurant.busy_hours});
     })
-/*
-    let res1 = restaurants.slice(0);
-    let res2 = restaurants.slice(0);
-    let res3 = restaurants.slice(0);
-    let res4 = restaurants.slice(0);
-    let res5 = restaurants.slice(0);
-    let res6 = restaurants.slice(0);
-    let res7 = restaurants.concat(res1,res2,res3,res4,res5,res6);
-*/
+
     return await new Promise(resolve => {
       setTimeout(() =>{
         resolve(restaurants);

@@ -1,7 +1,7 @@
 import React from 'react';
 //import API from '../../utilities/api';
 
-import { AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, TouchableHighlight, Button } from 'react-native';
+import { YellowBox,AsyncStorage, Modal, StyleSheet, Text, View, Dimensions, Image, ImageBackground, Animated, PanResponder, TouchableOpacity, TouchableHighlight, Button } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import {LoginManager} from 'react-native-fbsdk';
@@ -443,6 +443,7 @@ export default class ImageDisplayer extends React.Component{
 
 
   render() {
+    YellowBox.ignoreWarnings(['Warning: Async Storage has been extracted from react-native core']);  // <- insert the warning text here you wish to hide. 
     if(this.state.restaurants.length === 0) return null;
       return (
         <View style={{ flex: 1 , backgroundColor: '#efede6', flexDirection: 'column'}}>
